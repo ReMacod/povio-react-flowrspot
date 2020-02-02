@@ -44,7 +44,7 @@ export const handleFetchEnd = async ({ dispatch, request, success, failed }) => 
   }
 }
 
-export const handleFetchEndDelayed = ({ delay = 300, dispatch, request, success, failed }) => {
+export const handleFetchEndDelayed = ({ delay = 500, dispatch, request, success, failed }) => {
   dispatch(loadingEnding())
 
   setTimeout(() => {

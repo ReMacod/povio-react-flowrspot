@@ -11,7 +11,7 @@ const loadingSlice = createSlice({
   reducers: {
     loadingStart: (state, action) => ({ isLoading: true, isEnding: false }),
     loadingEnding: (state, action) => ({ isLoading: true, isEnding: true }),
-    loadingEnd: (state, action) => ({ isLoading: false, isEnding: true }),
+    loadingEnd: (state, action) => ({ isLoading: false, isEnding: false }),
   },
 })
 

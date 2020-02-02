@@ -17,9 +17,11 @@ const Flowers = ({ dispatch, flowers }) => {
     dispatch(fetchFlowers())
   }, [dispatch])
 
+  const { flowers: flowerList } = flowers
+
   return (
     <div className={className}>
-      <FlowerList flowers={flowers} />
+      <FlowerList flowers={flowerList} />
     </div>
   )
 }
