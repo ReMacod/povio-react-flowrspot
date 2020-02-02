@@ -1,11 +1,13 @@
 $light: #ffffff;
 $dark: #000000;
 $gray: #949ea0;
+$grayLight: #cccccc;
 $orange: #e4988d;
 
 :export {
   light: $light;
   dark: $dark;
   gray: $gray;
+  grayLight: $grayLight;
   orange: $orange;
 }

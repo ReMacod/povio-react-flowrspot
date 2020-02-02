@@ -7,6 +7,8 @@ import CssBaseline from '@material-ui/core/CssBaseline'
 import theme from './styles/theme'
 
 import Flowers from './routes/Flowers'
+import Sightings from './routes/Sightings'
+import Favorites from './routes/Favorites'
 
 import LayoutSwitcher from './layouts/Switcher'
 import LayoutDefault from './layouts/Default'
@@ -23,6 +25,8 @@ const routes = () => (
   <Switch>
     <Route path="/" exact component={Flowers} />
     <Route path="/flowers" exact component={Flowers} />
+    <Route path="/sightings" exact component={Sightings} />
+    <Route path="/favorites" exact component={Favorites} />
     <Route path="*" component={() => <div>404</div>} />
   </Switch>
 )

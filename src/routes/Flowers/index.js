@@ -6,14 +6,14 @@ import './style.sass'
 
 import { fetchFlowers } from '../../reducers/Flowers'
 
-const appClassName = classNames({
+const className = classNames({
   Flowers: true,
 })
 
 const Flowers = ({ dispatch }) => {
   dispatch(fetchFlowers())
 
-  return <div className={appClassName}>Flowers</div>
+  return <div className={className}>Flowers</div>
 }
 
 export default connect()(Flowers)

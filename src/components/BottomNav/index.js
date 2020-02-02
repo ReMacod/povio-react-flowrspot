@@ -7,8 +7,8 @@ import LocationOnIcon from '@material-ui/icons/LocationOn'
 import SettingsIcon from '@material-ui/icons/Settings'
 
 const routesToActiveButton = {
-  '/flowers': 0,
-  '/favorites': 1,
+  '/favorites': 0,
+  '/sightings': 1,
   '/settings': 2,
 }
 
@@ -19,10 +19,10 @@ export default function BottomNav() {
   return (
     <BottomNavigation value={routesToActiveButton[location.pathname]} showLabels>
       <BottomNavigationAction
-        label="Latest Sightings"
+        label="Sightings"
         icon={<LocationOnIcon />}
         onClick={() => {
-          history.push('/flowers')
+          history.push('/sightings')
         }}
       />
 

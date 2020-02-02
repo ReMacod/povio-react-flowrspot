@@ -20,6 +20,11 @@ const theme = createMuiTheme({
       'sans-serif',
     ].join(','),
   },
+  breakpoints: {
+    values: {
+      sm: 800,
+    },
+  },
   palette: {
     background: {
       default: light,
