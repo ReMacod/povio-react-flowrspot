@@ -1,12 +1,26 @@
 import React from 'react'
 import classNames from 'classnames'
+import { connect } from 'react-redux'
 
 import './style.sass'
 
-const className = classNames({
-  PageMain: true,
-})
+const PageMain = ({ routes, loading }) => {
+  const { isLoading, isEnding } = loading
 
-const PageMain = ({ routes }) => <main className={className}>{routes()}</main>
+  const className = classNames({
+    PageMain: true,
+    Overlay: isLoading || isEnding,
+    OverlayShow: isLoading,
+    OverlayFade: isEnding,
+  })
 
-export default PageMain
+  return <main className={className}>{routes()}</main>
+}
+
+const redux = [
+  ({ loading }) => ({
+    loading,
+  }),
+]
+
+export default connect(...redux)(PageMain)

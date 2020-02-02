@@ -17,8 +17,6 @@ const Flowers = ({ dispatch, flowers }) => {
     dispatch(fetchFlowers())
   }, [dispatch])
 
-  console.log('flowers', flowers)
-
   return (
     <div className={className}>
       <FlowerList flowers={flowers} />

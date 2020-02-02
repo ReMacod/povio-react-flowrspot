@@ -66,5 +66,7 @@ export const fetchFlowers = ({ page = 0 } = {}) => async (dispatch, getState) =>
 
   const request = () => fetch(flowers, options)
 
-  handleFetchEndDelayed({ delay: 600, dispatch, request, success, failed })
+  setTimeout(() => {
+    handleFetchEndDelayed({ dispatch, request, success, failed })
+  }, 300)
 }

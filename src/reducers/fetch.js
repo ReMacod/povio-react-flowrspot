@@ -1,6 +1,6 @@
 import { actions as loadingActions } from './Loading'
 
-const { loadingStart, loadingEnd } = loadingActions
+const { loadingStart, loadingEnding, loadingEnd } = loadingActions
 
 export const withIsFetching = ({ state, isFetching }) => ({ ...state, isFetching })
 
@@ -28,8 +28,6 @@ const dispatchMultipleWithEnd = ({ dispatch, actions, data }) => {
 
 export const handleFetchEnd = async ({ dispatch, request, success, failed }) => {
   try {
-    dispatch(loadingStart())
-
     const response = await request()
     const { status, body } = response
 
@@ -46,7 +44,9 @@ export const handleFetchEnd = async ({ dispatch, request, success, failed }) => 
   }
 }
 
-export const handleFetchEndDelayed = ({ delay, dispatch, request, success, failed }) => {
+export const handleFetchEndDelayed = ({ delay = 300, dispatch, request, success, failed }) => {
+  dispatch(loadingEnding())
+
   setTimeout(() => {
     handleFetchEnd({ dispatch, request, success, failed })
   }, delay)
