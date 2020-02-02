@@ -15,9 +15,11 @@ import LayoutDefault from './layouts/Default'
 import LayoutWithFooter from './layouts/WithFooter'
 
 import store from './reducers/store'
+import { reducer as loading } from './reducers/Loading'
 import { reducer as flowers } from './reducers/Flowers'
 
 const state = {
+  loading,
   flowers,
 }
 
@@ -27,6 +29,7 @@ const routes = () => (
     <Route path="/flowers" exact component={Flowers} />
     <Route path="/sightings" exact component={Sightings} />
     <Route path="/favorites" exact component={Favorites} />
+    {/* TODO: style 404 page */}
     <Route path="*" component={() => <div>404</div>} />
   </Switch>
 )

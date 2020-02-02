@@ -3,9 +3,10 @@ import { createSlice } from '@reduxjs/toolkit'
 import { options } from '../../api/fetch'
 import { flowers } from '../../api/endpoints'
 
-import { handleFetch } from '../fetch'
+import { withIsFetching, handleFetchStart, handleFetchEndDelayed } from '../fetch'
 
 const initialState = {
+  isFetching: false,
   flowers: [
     // {
     //   id: 0,
@@ -26,18 +27,21 @@ const initialState = {
   },
 }
 
+const fetchFlowersStart = (state, action) => withIsFetching({ state, isFetching: true })
+
 const fetchFlowersSuccess = (state, action) => {
   const { payload: flowers } = action
 
-  return flowers
+  return withIsFetching({ state: flowers, isFetching: false })
 }
 
-const fetchFlowersFailed = (state, action) => state
+const fetchFlowersFailed = (state, action) => withIsFetching({ state, isFetching: false })
 
 const flowersSlice = createSlice({
   name: 'flowers',
   initialState,
   reducers: {
+    fetchFlowersStart,
     fetchFlowersSuccess,
     fetchFlowersFailed,
   },
@@ -46,11 +50,21 @@ const flowersSlice = createSlice({
 export const { reducer, actions } = flowersSlice
 
 export const fetchFlowers = ({ page = 0 } = {}) => async (dispatch, getState) => {
-  const { fetchFlowersSuccess: success, fetchFlowersFailed: failed } = actions
+  const state = getState()
+
+  if (state.flowers.isFetching) {
+    return
+  }
+
+  const {
+    fetchFlowersStart: start,
+    fetchFlowersSuccess: success,
+    fetchFlowersFailed: failed,
+  } = actions
+
+  handleFetchStart({ dispatch, start })
 
   const request = () => fetch(flowers, options)
 
-  handleFetch({ dispatch, request, success, failed })
+  handleFetchEndDelayed({ delay: 600, dispatch, request, success, failed })
 }
-
-export default flowersSlice

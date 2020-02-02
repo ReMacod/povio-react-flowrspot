@@ -4,9 +4,9 @@ import classNames from 'classnames'
 import './style.sass'
 
 const className = classNames({
-  FlowersList: true,
+  FlowerList: true,
 })
 
-const FlowersList = () => <div className={className}>FlowersList</div>
+const FlowerList = () => <div className={className}>FlowerList</div>
 
-export default FlowersList
+export default FlowerList

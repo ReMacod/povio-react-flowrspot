@@ -114,7 +114,7 @@ export default function AppBar() {
             </Link>
           </div>
 
-          <IconButton edge="start" className={classes.mobileMenu} aria-label="menu">
+          <IconButton edge="start" className={mobileMenu} aria-label="menu">
             <MenuIcon />
           </IconButton>
         </Toolbar>
