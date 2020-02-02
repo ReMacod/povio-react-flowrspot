@@ -5,16 +5,18 @@ import './style.sass'
 
 import PageHeader from '../../components/PageHeader'
 import PageMain from '../../components/PageMain'
+import PageFooter from '../../components/PageFooter'
 
 const className = classNames({
-  LayoutDefault: true,
+  LayoutWithFooter: true,
 })
 
-const LayoutDefault = ({ routes }) => (
+const LayoutWithFooter = ({ routes }) => (
   <div className={className}>
     <PageHeader />
     <PageMain routes={routes} />
+    <PageFooter />
   </div>
 )
 
-export default LayoutDefault
+export default LayoutWithFooter

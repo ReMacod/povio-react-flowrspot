@@ -1,47 +1,45 @@
 import React from 'react'
-import classNames from 'classnames'
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
-import { Provider } from 'react-redux'
+import { Provider as ReduxProvider } from 'react-redux'
+import { ThemeProvider } from '@material-ui/core/styles'
+import CssBaseline from '@material-ui/core/CssBaseline'
 
-import './App.sass'
+import theme from './styles/theme'
 
-import Home from './routes/Home'
 import Flowers from './routes/Flowers'
 
 import LayoutSwitcher from './layouts/Switcher'
-import DefaultLayout from './layouts/Default'
-import FullLayout from './layouts/Full'
+import LayoutDefault from './layouts/Default'
+import LayoutWithFooter from './layouts/WithFooter'
 
 import store from './reducers/store'
 import { reducer as flowers } from './reducers/Flowers'
-
-const routes = () => (
-  <Switch>
-    <Route path="/" exact component={Home} />
-    <Route path="/flowers" exact component={Flowers} />
-  </Switch>
-)
-
-const layouts = {
-  '/flowers': FullLayout,
-}
 
 const state = {
   flowers,
 }
 
-const appClassName = classNames({
-  App: true,
-})
+const routes = () => (
+  <Switch>
+    <Route path="/" exact component={Flowers} />
+    <Route path="/flowers" exact component={Flowers} />
+    <Route path="*" component={() => <div>404</div>} />
+  </Switch>
+)
+
+const layouts = {
+  '/flowers': LayoutWithFooter,
+}
 
 const App = () => (
-  <div className={appClassName}>
-    <Provider store={store(state)}>
+  <ThemeProvider theme={theme}>
+    <CssBaseline />
+    <ReduxProvider store={store(state)}>
       <Router>
-        <LayoutSwitcher layouts={layouts} routes={routes} DefaultLayout={DefaultLayout} />
+        <LayoutSwitcher routes={routes} layouts={layouts} default={LayoutDefault} />
       </Router>
-    </Provider>
-  </div>
+    </ReduxProvider>
+  </ThemeProvider>
 )
 
 export default App
