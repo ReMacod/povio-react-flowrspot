@@ -3,7 +3,7 @@ import classNames from 'classnames'
 
 import './style.sass'
 
-import BottomNav from '../BottomNav'
+import BottomNav from '../../components/BottomNav'
 
 const className = classNames({
   PageFooter: true,

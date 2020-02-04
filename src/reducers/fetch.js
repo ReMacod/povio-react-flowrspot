@@ -1,13 +1,12 @@
 import { actions as loadingActions } from './Loading'
-
 const { loadingStart, loadingEnding, loadingEnd } = loadingActions
 
-export const withIsFetching = ({ state, isFetching }) => ({ ...state, isFetching })
+/* IS_FETCHING */
 
-export const handleFetchStart = ({ dispatch, start }) => {
-  dispatch(loadingStart())
-  dispatch(start())
-}
+export const withIsFetchingTrue = ({ state }) => ({ ...state, isFetching: true })
+export const withIsFetchingFalse = ({ state }) => ({ ...state, isFetching: false })
+
+/* DISPATCH MULTIPLE */
 
 const dispatchMultiple = ({ dispatch, actions, data }) => {
   if (Array.isArray(actions)) {
@@ -24,6 +23,18 @@ const dispatchMultipleWithEnd = ({ dispatch, actions, data }) => {
   dispatch(loadingEnd())
 
   dispatchMultiple({ dispatch, actions, data })
+}
+
+/* FETCH */
+
+export const handleFetchStart = ({ dispatch, start }) => {
+  dispatch(loadingStart())
+  dispatch(start())
+}
+
+export const handleFetchStartMinimal = ({ dispatch, start }) => {
+  dispatch(loadingStart({ isMinimal: true }))
+  dispatch(start())
 }
 
 export const handleFetchEnd = async ({ dispatch, request, success, failed }) => {

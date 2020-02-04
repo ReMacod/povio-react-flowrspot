@@ -1,6 +1,5 @@
 import React from 'react'
 import classNames from 'classnames'
-import { connect } from 'react-redux'
 
 import LinearProgress from '@material-ui/core/LinearProgress'
 
@@ -14,10 +13,4 @@ const LoadingBar = ({ loading }) => (
   <div className={className}>{loading.isLoading && <LinearProgress />}</div>
 )
 
-const redux = [
-  ({ loading }) => ({
-    loading,
-  }),
-]
-
-export default connect(...redux)(LoadingBar)
+export default LoadingBar

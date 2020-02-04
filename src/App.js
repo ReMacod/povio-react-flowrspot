@@ -11,8 +11,11 @@ import Sightings from './routes/Sightings'
 import Favorites from './routes/Favorites'
 
 import LayoutSwitcher from './layouts/Switcher'
-import LayoutDefault from './layouts/Default'
-import LayoutWithFooter from './layouts/WithFooter'
+import LayoutMain from './layouts/Main'
+
+import PageHeader from './page/Header'
+import PageMain from './page/Main'
+import PageFooter from './page/Footer'
 
 import store from './reducers/store'
 import { reducer as loading } from './reducers/Loading'
@@ -35,7 +38,21 @@ const routes = () => (
 )
 
 const layouts = {
-  '/flowers': LayoutWithFooter,
+  main: {
+    layout: LayoutMain,
+    components: {
+      PageHeader,
+      PageMain,
+    },
+  },
+  '/flowers': {
+    layout: LayoutMain,
+    components: {
+      PageHeader,
+      PageMain,
+      PageFooter,
+    },
+  },
 }
 
 const App = () => (
@@ -43,7 +60,7 @@ const App = () => (
     <CssBaseline />
     <ReduxProvider store={store(state)}>
       <Router>
-        <LayoutSwitcher routes={routes} layouts={layouts} default={LayoutDefault} />
+        <LayoutSwitcher routes={routes} layouts={layouts} main={layouts.main} />
       </Router>
     </ReduxProvider>
   </ThemeProvider>

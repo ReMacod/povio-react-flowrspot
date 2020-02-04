@@ -1,9 +1,15 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 import { options } from '../../api/fetch'
-import { flowers } from '../../api/endpoints'
+import { flowers, flowersSearch } from '../../api/endpoints'
 
-import { withIsFetching, handleFetchStart, handleFetchEndDelayed } from '../fetch'
+import {
+  withIsFetchingTrue,
+  withIsFetchingFalse,
+  handleFetchStart,
+  handleFetchStartMinimal,
+  handleFetchEndDelayed,
+} from '../fetch'
 
 const initialState = {
   isFetching: false,
@@ -27,29 +33,50 @@ const initialState = {
   },
 }
 
-const fetchFlowersStart = (state, action) => withIsFetching({ state, isFetching: true })
+/* LIST */
 
-const fetchFlowersSuccess = (state, action) => {
+const listFlowersStart = (state, action) => withIsFetchingTrue({ state })
+
+const listFlowersSuccess = (state, action) => {
   const { payload: flowers } = action
 
-  return withIsFetching({ state: flowers, isFetching: false })
+  return withIsFetchingFalse({ state: flowers })
 }
 
-const fetchFlowersFailed = (state, action) => withIsFetching({ state, isFetching: false })
+const listFlowersFailed = (state, action) => withIsFetchingFalse({ state })
+
+/* SEARCH */
+
+const searchFlowersStart = (state, action) => withIsFetchingTrue({ state })
+
+const searchFlowersSuccess = (state, action) => {
+  const { payload: flowers } = action
+
+  return withIsFetchingFalse({ state: flowers })
+}
+
+const searchFlowersFailed = (state, action) => withIsFetchingFalse({ state })
+
+/* SLICE */
 
 const flowersSlice = createSlice({
   name: 'flowers',
   initialState,
   reducers: {
-    fetchFlowersStart,
-    fetchFlowersSuccess,
-    fetchFlowersFailed,
+    listFlowersStart,
+    listFlowersSuccess,
+    listFlowersFailed,
+    searchFlowersStart,
+    searchFlowersSuccess,
+    searchFlowersFailed,
   },
 })
 
 export const { reducer, actions } = flowersSlice
 
-export const fetchFlowers = ({ page = 0 } = {}) => async (dispatch, getState) => {
+/* ACTIONS */
+
+export const listFlowers = ({ page = 0 } = {}) => async (dispatch, getState) => {
   const state = getState()
 
   if (state.flowers.isFetching) {
@@ -57,9 +84,9 @@ export const fetchFlowers = ({ page = 0 } = {}) => async (dispatch, getState) =>
   }
 
   const {
-    fetchFlowersStart: start,
-    fetchFlowersSuccess: success,
-    fetchFlowersFailed: failed,
+    listFlowersStart: start,
+    listFlowersSuccess: success,
+    listFlowersFailed: failed,
   } = actions
 
   handleFetchStart({ dispatch, start })
@@ -69,4 +96,25 @@ export const fetchFlowers = ({ page = 0 } = {}) => async (dispatch, getState) =>
   setTimeout(() => {
     handleFetchEndDelayed({ dispatch, request, success, failed })
   }, 300)
+}
+
+export const searchFlowers = ({ query = '' } = {}) => async (dispatch, getState) => {
+  const state = getState()
+
+  if (state.flowers.isFetching) {
+    return
+  }
+
+  const {
+    searchFlowersStart: start,
+    searchFlowersSuccess: success,
+    searchFlowersFailed: failed,
+  } = actions
+
+  handleFetchStartMinimal({ dispatch, start })
+
+  const endpoint = `${flowersSearch}?query=${query}`
+  const request = () => fetch(endpoint, options)
+
+  handleFetchEndDelayed({ dispatch, request, success, failed })
 }

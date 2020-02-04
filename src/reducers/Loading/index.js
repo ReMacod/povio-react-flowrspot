@@ -9,9 +9,24 @@ const loadingSlice = createSlice({
   name: 'loading',
   initialState,
   reducers: {
-    loadingStart: (state, action) => ({ isLoading: true, isEnding: false }),
-    loadingEnding: (state, action) => ({ isLoading: true, isEnding: true }),
-    loadingEnd: (state, action) => ({ isLoading: false, isEnding: false }),
+    loadingStart: (state, action) => ({
+      ...state,
+      isLoading: true,
+      isEnding: false,
+      ...action.payload,
+    }),
+    loadingEnding: (state, action) => ({
+      ...state,
+      isLoading: true,
+      isEnding: true,
+      ...action.payload,
+    }),
+    loadingEnd: (state, action) => ({
+      ...state,
+      isLoading: false,
+      isEnding: false,
+      ...action.payload,
+    }),
   },
 })
 
