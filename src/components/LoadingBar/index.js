@@ -9,8 +9,14 @@ const className = classNames({
   LoadingBar: true,
 })
 
-const LoadingBar = ({ loading }) => (
-  <div className={className}>{loading.isLoading && <LinearProgress />}</div>
-)
+const LoadingBar = ({ loading }) => {
+  const { isLoading, isDisabled } = loading
+
+  if (isDisabled) {
+    return null
+  }
+
+  return <div className={className}>{isLoading && <LinearProgress />}</div>
+}
 
 export default LoadingBar

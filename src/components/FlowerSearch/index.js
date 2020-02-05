@@ -28,8 +28,12 @@ const useStyles = makeStyles(theme => ({
     marginLeft: theme.spacing(2),
     flex: 1,
   },
-  iconButton: {
+  searchIconButton: {
     padding: 10,
+  },
+  clearIconButton: {
+    padding: 10,
+    color: theme.palette.gray.main,
   },
   divider: {
     height: 28,
@@ -39,6 +43,7 @@ const useStyles = makeStyles(theme => ({
 
 export default function FlowerSearch({ onSearch }) {
   const classes = useStyles()
+  const { root, input, searchIconButton, clearIconButton, divider } = classes
 
   const [query, setQuery] = useState('')
 
@@ -63,9 +68,9 @@ export default function FlowerSearch({ onSearch }) {
 
   return (
     <div className={className}>
-      <Paper component="form" className={classes.root} onSubmit={handleSubmit}>
+      <Paper component="form" className={root} onSubmit={handleSubmit}>
         <InputBase
-          className={classes.input}
+          className={input}
           placeholder="Looking for something specific?"
           inputProps={{ 'aria-label': 'search flowers' }}
           value={query}
@@ -74,22 +79,17 @@ export default function FlowerSearch({ onSearch }) {
 
         {query && (
           <Fragment>
-            <IconButton
-              color="secondary"
-              className={classes.iconButton}
-              aria-label="clear"
-              onClick={handleClear}
-            >
+            <IconButton className={clearIconButton} aria-label="clear" onClick={handleClear}>
               <CloseIcon />
             </IconButton>
 
-            <Divider className={classes.divider} orientation="vertical" />
+            <Divider className={divider} orientation="vertical" />
           </Fragment>
         )}
 
         <IconButton
           color="primary"
-          className={classes.iconButton}
+          className={searchIconButton}
           aria-label="search"
           onClick={handleSubmit}
         >

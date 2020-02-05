@@ -1,13 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-import { options } from '../../api/fetch'
+import { optionsGet } from '../../api/fetch'
 import { flowers, flowersSearch } from '../../api/endpoints'
 
 import {
   withIsFetchingTrue,
   withIsFetchingFalse,
   handleFetchStart,
-  handleFetchStartMinimal,
   handleFetchEndDelayed,
 } from '../fetch'
 
@@ -91,7 +90,7 @@ export const listFlowers = ({ page = 0 } = {}) => async (dispatch, getState) => 
 
   handleFetchStart({ dispatch, start })
 
-  const request = () => fetch(flowers, options)
+  const request = () => fetch(flowers, optionsGet)
 
   setTimeout(() => {
     handleFetchEndDelayed({ dispatch, request, success, failed })
@@ -111,10 +110,10 @@ export const searchFlowers = ({ query = '' } = {}) => async (dispatch, getState)
     searchFlowersFailed: failed,
   } = actions
 
-  handleFetchStartMinimal({ dispatch, start })
+  handleFetchStart({ dispatch, start, loadingConfig: { isMinimal: true } })
 
   const endpoint = `${flowersSearch}?query=${query}`
-  const request = () => fetch(endpoint, options)
+  const request = () => fetch(endpoint, optionsGet)
 
   handleFetchEndDelayed({ dispatch, request, success, failed })
 }

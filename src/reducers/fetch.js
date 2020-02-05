@@ -6,6 +6,10 @@ const { loadingStart, loadingEnding, loadingEnd } = loadingActions
 export const withIsFetchingTrue = ({ state }) => ({ ...state, isFetching: true })
 export const withIsFetchingFalse = ({ state }) => ({ ...state, isFetching: false })
 
+/* ERROR */
+
+export const withError = ({ state, error }) => ({ ...state, error })
+
 /* DISPATCH MULTIPLE */
 
 const dispatchMultiple = ({ dispatch, actions, data }) => {
@@ -27,23 +31,19 @@ const dispatchMultipleWithEnd = ({ dispatch, actions, data }) => {
 
 /* FETCH */
 
-export const handleFetchStart = ({ dispatch, start }) => {
-  dispatch(loadingStart())
-  dispatch(start())
-}
-
-export const handleFetchStartMinimal = ({ dispatch, start }) => {
-  dispatch(loadingStart({ isMinimal: true }))
+export const handleFetchStart = ({ dispatch, start, loadingConfig = {} }) => {
+  dispatch(loadingStart(loadingConfig))
   dispatch(start())
 }
 
 export const handleFetchEnd = async ({ dispatch, request, success, failed }) => {
   try {
     const response = await request()
-    const { status, body } = response
+    const { status } = response
 
     if (status !== 200) {
-      dispatchMultipleWithEnd({ dispatch, actions: failed, data: body })
+      const jsonError = await response.json()
+      dispatchMultipleWithEnd({ dispatch, actions: failed, data: jsonError })
       return
     }
 
@@ -51,7 +51,8 @@ export const handleFetchEnd = async ({ dispatch, request, success, failed }) => 
 
     dispatchMultipleWithEnd({ dispatch, actions: success, data: jsonData })
   } catch (error) {
-    dispatchMultipleWithEnd({ dispatch, actions: failed, data: error })
+    const message = (error || {}).message || 'Something went wrong'
+    dispatchMultipleWithEnd({ dispatch, actions: failed, data: message })
   }
 }
 

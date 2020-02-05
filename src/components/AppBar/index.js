@@ -1,14 +1,13 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
 import { makeStyles } from '@material-ui/core/styles'
 import MuiAppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import IconButton from '@material-ui/core/IconButton'
 import MenuIcon from '@material-ui/icons/Menu'
-import Fab from '@material-ui/core/Fab'
 
 import IconLogo from '../IconLogo'
 import ButtonLink from '../ButtonLink'
+import SignupButton from '../SignupButton'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -75,7 +74,7 @@ const buttonLinkStyles = makeStyles(theme => ({
 
 export default function AppBar() {
   const classes = useStyles()
-  const { root, appBar, mainMenu, mobileMenu, fablink, fabButton } = classes
+  const { root, appBar, mainMenu, mobileMenu } = classes
 
   const brandLinkClasses = brandLinkStyles()
   const buttonLinkClasses = buttonLinkStyles()
@@ -101,17 +100,7 @@ export default function AppBar() {
             <ButtonLink classes={buttonLinkClasses} label="Favorites" linkTo="/favorites" />
             <ButtonLink classes={buttonLinkClasses} label="Login" linkTo="/" />
 
-            <Link to="/signup" className={fablink}>
-              <Fab
-                variant="extended"
-                size="medium"
-                color="primary"
-                aria-label="add"
-                className={fabButton}
-              >
-                New Account
-              </Fab>
-            </Link>
+            <SignupButton />
           </div>
 
           <IconButton edge="start" className={mobileMenu} aria-label="menu">

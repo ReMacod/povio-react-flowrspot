@@ -5,15 +5,16 @@ import { connect } from 'react-redux'
 import './style.sass'
 
 const PageMain = ({ routes, loading }) => {
-  const { isLoading, isEnding, isMinimal } = loading
+  const { isLoading, isEnding, isMinimal, isDisabled } = loading
 
-  const overlay = isMinimal
-    ? {}
-    : {
-        Overlay: isLoading || isEnding,
-        OverlayShow: isLoading,
-        OverlayFade: isEnding,
-      }
+  const overlay =
+    isMinimal || isDisabled
+      ? {}
+      : {
+          Overlay: isLoading || isEnding,
+          OverlayShow: isLoading,
+          OverlayFade: isEnding,
+        }
 
   const className = classNames({
     PageMain: true,
