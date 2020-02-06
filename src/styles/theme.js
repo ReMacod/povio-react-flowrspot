@@ -3,10 +3,12 @@ import { createMuiTheme } from '@material-ui/core/styles'
 import colors from './colors.scss'
 
 // If these commented colors are usedthen tests fail
-const { light, gray /*, dark , orange */ } = colors
+const { light, gray /*, dark , orange, green, red */ } = colors
 
 const dark = '#000000'
 const orange = '#e4988d'
+const green = '#32CD32'
+const red = '#DC143C'
 
 const theme = createMuiTheme({
   typography: {
@@ -44,6 +46,12 @@ const theme = createMuiTheme({
     secondary: {
       main: dark,
       contrastText: light,
+    },
+    success: {
+      main: green,
+    },
+    error: {
+      main: red,
     },
     light: {
       main: light,

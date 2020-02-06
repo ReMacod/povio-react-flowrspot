@@ -3,15 +3,18 @@ import { createSlice } from '@reduxjs/toolkit'
 import { optionsGet } from '../../api/fetch'
 import { flowers, flowersSearch } from '../../api/endpoints'
 
-import {
-  withIsFetchingTrue,
-  withIsFetchingFalse,
-  handleFetchStart,
-  handleFetchEndDelayed,
-} from '../fetch'
+import { fetchActions, checkIsFetching, handleFetch, delayLoadingEnd } from '../fetch'
+
+import { actions as loadingActions } from '../Loading'
+const { loadingStart, loadingEnding, loadingEnd } = loadingActions
+
+const initialFetchingState = {
+  isFetching: false,
+  error: null,
+}
 
 const initialState = {
-  isFetching: false,
+  ...initialFetchingState,
   flowers: [
     // {
     //   id: 0,
@@ -34,32 +37,46 @@ const initialState = {
 
 /* LIST */
 
-const listFlowersStart = (state, action) => withIsFetchingTrue({ state })
-
-const listFlowersSuccess = (state, action) => {
-  const { payload: flowers } = action
-
-  return withIsFetchingFalse({ state: flowers })
-}
-
-const listFlowersFailed = (state, action) => withIsFetchingFalse({ state })
+const listFlowersStart = (state, action) => ({
+  ...state,
+  ...initialFetchingState,
+  isFetching: true,
+})
+const listFlowersSuccess = (state, action) => ({
+  ...state,
+  ...initialFetchingState,
+  flowers: action.payload.flowers,
+})
+const listFlowersFailed = (state, action) => ({
+  ...state,
+  ...initialFetchingState,
+  error: action.payload.error,
+})
 
 /* SEARCH */
 
-const searchFlowersStart = (state, action) => withIsFetchingTrue({ state })
-
-const searchFlowersSuccess = (state, action) => {
-  const { payload: flowers } = action
-
-  return withIsFetchingFalse({ state: flowers })
-}
-
-const searchFlowersFailed = (state, action) => withIsFetchingFalse({ state })
+const searchFlowersStart = (state, action) => ({
+  ...state,
+  ...initialFetchingState,
+  isFetching: true,
+})
+const searchFlowersSuccess = (state, action) => ({
+  ...state,
+  ...initialFetchingState,
+  flowers: action.payload.flowers,
+})
+const searchFlowersFailed = (state, action) => ({
+  ...state,
+  ...initialFetchingState,
+  error: action.payload.error,
+})
 
 /* SLICE */
 
+const SLICE_NAME = 'flowers'
+
 const flowersSlice = createSlice({
-  name: 'flowers',
+  name: SLICE_NAME,
   initialState,
   reducers: {
     listFlowersStart,
@@ -73,47 +90,56 @@ const flowersSlice = createSlice({
 
 export const { reducer, actions } = flowersSlice
 
-/* ACTIONS */
+/* THUNKS */
 
-export const listFlowers = ({ page = 0 } = {}) => async (dispatch, getState) => {
-  const state = getState()
+export const listFlowers = ({ page = 0 } = {}) => (dispatch, getState) =>
+  new Promise((fulfill, reject) => {
+    if (checkIsFetching({ getState, SLICE_NAME, reject, error: 'Already getting flowers' })) {
+      return
+    }
 
-  if (state.flowers.isFetching) {
-    return
-  }
+    const { onStart, onSuccess, onFailed } = fetchActions({ actions, THUNK_NAME: 'listFlowers' })
 
-  const {
-    listFlowersStart: start,
-    listFlowersSuccess: success,
-    listFlowersFailed: failed,
-  } = actions
+    dispatch(onStart())
+    dispatch(loadingStart())
 
-  handleFetchStart({ dispatch, start })
+    const request = () => fetch(flowers, optionsGet)
 
-  const request = () => fetch(flowers, optionsGet)
+    const onFulfill = result => {
+      delayLoadingEnd({ dispatch, loadingEnding, loadingEnd })
+      fulfill(result)
+    }
+    const onReject = error => {
+      dispatch(loadingEnd())
+      reject(error)
+    }
 
-  setTimeout(() => {
-    handleFetchEndDelayed({ dispatch, request, success, failed })
-  }, 300)
-}
+    handleFetch({ dispatch, request, fulfill: onFulfill, reject: onReject, onSuccess, onFailed })
+  })
 
-export const searchFlowers = ({ query = '' } = {}) => async (dispatch, getState) => {
-  const state = getState()
+export const searchFlowers = ({ query = '' } = {}) => (dispatch, getState) =>
+  new Promise((fulfill, reject) => {
+    if (checkIsFetching({ getState, SLICE_NAME, reject, error: 'Already searching flowers' })) {
+      return
+    }
 
-  if (state.flowers.isFetching) {
-    return
-  }
+    const { onStart, onSuccess, onFailed } = fetchActions({ actions, THUNK_NAME: 'searchFlowers' })
 
-  const {
-    searchFlowersStart: start,
-    searchFlowersSuccess: success,
-    searchFlowersFailed: failed,
-  } = actions
+    dispatch(onStart())
+    dispatch(loadingStart({ isMinimal: true }))
 
-  handleFetchStart({ dispatch, start, loadingConfig: { isMinimal: true } })
+    const endpoint = `${flowersSearch}?query=${query}`
+    const request = () => fetch(endpoint, optionsGet)
 
-  const endpoint = `${flowersSearch}?query=${query}`
-  const request = () => fetch(endpoint, optionsGet)
+    const onFulfill = result => {
+      dispatch(loadingEnd())
+      fulfill(result)
+    }
 
-  handleFetchEndDelayed({ dispatch, request, success, failed })
-}
+    const onReject = error => {
+      dispatch(loadingEnd())
+      reject(error)
+    }
+
+    handleFetch({ dispatch, request, fulfill: onFulfill, reject: onReject, onSuccess, onFailed })
+  })

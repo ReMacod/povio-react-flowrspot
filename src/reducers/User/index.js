@@ -3,16 +3,16 @@ import { createSlice } from '@reduxjs/toolkit'
 import { optionsGet, optionsPost } from '../../api/fetch'
 import { usersRegister as userSignup, usersMe } from '../../api/endpoints'
 
-import {
-  withIsFetchingTrue,
-  withIsFetchingFalse,
-  handleFetchStart,
-  handleFetchEndDelayed,
-} from '../fetch'
+import { checkIsFetching, handleFetch } from '../fetch'
 
-const initialState = {
+const initialFetchingState = {
   isFetching: false,
   error: null,
+}
+
+const initialUserState = {
+  auth_token: null,
+  user: null,
   // auth_token: 'string',
   // user: {
   //   id: 0,
@@ -21,42 +21,46 @@ const initialState = {
   // },
 }
 
+const initialState = {
+  ...initialFetchingState,
+  ...initialUserState,
+}
+
 /* SIGNUP */
 
-const signupUserStart = (state, action) => withIsFetchingTrue({ state: { ...state, error: null } })
-
-const signupUserSuccess = (state, action) => {
-  const { payload: auth_token } = action
-
-  console.log('signupUserSuccess', auth_token)
-
-  return withIsFetchingFalse({ state: auth_token })
-}
-
-const signupUserFailed = (state, action) => {
-  const {
-    payload: { auth_token, error },
-  } = action
-
-  return withIsFetchingFalse({ state: { ...state, auth_token, error } })
-}
+const signupUserStart = (state, action) => ({ ...state, ...initialFetchingState, isFetching: true })
+const signupUserSuccess = (state, action) => ({
+  ...state,
+  ...initialFetchingState,
+  auth_token: action.payload.auth_token,
+})
+const signupUserFailed = (state, action) => ({
+  ...state,
+  ...initialFetchingState,
+  ...initialUserState,
+  error: action.payload.error,
+})
 
 /* USER INFO */
 
-const userInfoStart = (state, action) => withIsFetchingTrue({ state })
-
-const userInfoSuccess = (state, action) => {
-  const { payload: user } = action
-
-  return withIsFetchingFalse({ state: { ...state, ...user } })
-}
-
-const userInfoFailed = (state, action) => withIsFetchingFalse({ state })
+const userInfoStart = (state, action) => ({ ...state, ...initialFetchingState, isFetching: true })
+const userInfoSuccess = (state, action) => ({
+  ...state,
+  ...initialFetchingState,
+  user: action.payload.user,
+})
+const userInfoFailed = (state, action) => ({
+  state,
+  ...initialFetchingState,
+  error: action.payload.error,
+})
 
 /* SLICE */
 
+const SLICE_NAME = 'user'
+
 const userSlice = createSlice({
-  name: 'user',
+  name: SLICE_NAME,
   initialState,
   reducers: {
     signupUserStart,
@@ -70,57 +74,54 @@ const userSlice = createSlice({
 
 export const { reducer, actions } = userSlice
 
-/* ACTIONS */
+/* THUNKS */
 
-export const userInfo = () => async (dispatch, getState) => {
-  const state = getState()
+export const userInfo = () => (dispatch, getState) =>
+  new Promise((fulfill, reject) => {
+    if (checkIsFetching({ getState, SLICE_NAME, reject, error: 'Already getting user info' })) {
+      return
+    }
 
-  const { isFetching, auth_token } = state.user
-
-  if (isFetching) {
-    return
-  }
-
-  const { userInfoStart: start, userInfoSuccess: success, userInfoFailed: failed } = actions
-
-  handleFetchStart({ dispatch, start, loadingConfig: { isDisabled: true } })
-
-  const options = {
-    ...optionsGet,
     /* prettier-ignore */
-    headers: { ...optionsGet.headers, 'Authorization': `Bearer ${auth_token}` }
-  }
-  const request = () => fetch(usersMe, options)
+    const {
+      userInfoStart: start,
+      userInfoSuccess: onSuccess,
+      userInfoFailed: onFailed
+    } = actions
 
-  handleFetchEndDelayed({ dispatch, request, success, failed })
-}
+    dispatch(start())
 
-export const signupUser = ({ body, onSuccess, onDone } = {}) => async (dispatch, getState) => {
-  const state = getState()
+    const state = getState()
+    const { auth_token } = state.user
 
-  if (state.user.isFetching) {
-    return
-  }
+    const options = {
+      ...optionsGet,
+      /* prettier-ignore */
+      headers: { ...optionsGet.headers, 'Authorization': `Bearer ${auth_token}` }
+    }
 
-  const { signupUserStart: start, signupUserSuccess, signupUserFailed: failed } = actions
+    const request = () => fetch(usersMe, options)
 
-  handleFetchStart({ dispatch, start, loadingConfig: { isDisabled: true } })
+    handleFetch({ dispatch, request, fulfill, reject, onSuccess, onFailed })
+  })
 
-  const options = { ...optionsPost, body: JSON.stringify(body) }
-  const request = () => fetch(userSignup, options)
-  const success = [signupUserSuccess, onSuccess]
+export const signupUser = ({ body } = {}) => (dispatch, getState) =>
+  new Promise((fulfill, reject) => {
+    if (checkIsFetching({ getState, SLICE_NAME, reject, error: 'Already signing up' })) {
+      return
+    }
 
-  const delay = 500
+    /* prettier-ignore */
+    const {
+      signupUserStart: start,
+      signupUserSuccess: onSuccess,
+      signupUserFailed: onFailed,
+    } = actions
 
-  setTimeout(() => {
-    setTimeout(() => {
-      onDone()
-    }, delay)
+    dispatch(start())
 
-    handleFetchEndDelayed({ delay, dispatch, request, success, failed })
-  }, 2000)
-}
+    const options = { ...optionsPost, body: JSON.stringify(body) }
+    const request = () => fetch(userSignup, options)
 
-export const signupUserAndUserInfo = ({ body, onDone } = {}) => async (dispatch, getState) => {
-  dispatch(signupUser({ body, onSuccess: userInfo, onDone }))
-}
+    handleFetch({ dispatch, request, fulfill, reject, onSuccess, onFailed })
+  })

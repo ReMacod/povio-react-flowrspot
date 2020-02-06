@@ -7,12 +7,13 @@ import DialogTitle from '@material-ui/core/DialogTitle'
 import Alert from '@material-ui/lab/Alert'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
 import { useTheme } from '@material-ui/core/styles'
-
 import { makeStyles } from '@material-ui/core/styles'
+
+import { useHistory } from 'react-router-dom'
 
 import SignupForm from '../SignupForm'
 
-import { signupUserAndUserInfo } from '../../reducers/User'
+import { signupUser, userInfo } from '../../reducers/User'
 
 import { formatError } from '../../utils/Error'
 
@@ -40,26 +41,42 @@ const useStyles = makeStyles(theme => ({
 const SignupButton = ({ dispatch, user }) => {
   const { error } = user
 
-  const [open, setOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+  const [didRegister, setDidRegister] = useState(false)
+
+  const history = useHistory()
+
   const theme = useTheme()
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'))
 
   const classes = useStyles()
   const { fabButton, dialog, dialogTitle, dialogContent, alert } = classes
 
-  const handleClickOpen = () => {
-    setOpen(true)
-  }
+  const handleClickOpen = () => setIsOpen(true)
+  const handleClose = () => setIsOpen(false)
 
-  const handleClose = () => {
-    setOpen(false)
+  const handleRegister = () => {
+    dispatch(userInfo())
+      .then(() => {
+        setIsOpen(false)
+        history.push('/user')
+      })
+      .catch(error => {
+        console.log('SignupButton handleRegister error', error)
+      })
   }
 
   const handleSubmit = (values, { setSubmitting }) => {
-    // NEXT: add useState for done style for form button and delayed redirect to user page
-    const onDone = () => setSubmitting(false)
+    setDidRegister(false)
 
-    dispatch(signupUserAndUserInfo({ body: values, onDone }))
+    dispatch(signupUser({ body: values }))
+      .then(() => {
+        setSubmitting(false)
+        setDidRegister(true)
+
+        handleRegister({ setSubmitting })
+      })
+      .catch(error => setSubmitting(false))
   }
 
   return (
@@ -79,7 +96,7 @@ const SignupButton = ({ dispatch, user }) => {
         className={dialog}
         fullScreen={fullScreen}
         maxWidth="xs"
-        open={open}
+        open={isOpen}
         onClose={handleClose}
         aria-labelledby="responsive-dialog-title"
       >
@@ -94,7 +111,7 @@ const SignupButton = ({ dispatch, user }) => {
         )}
 
         <DialogContent className={dialogContent}>
-          <SignupForm onSubmit={handleSubmit} />
+          <SignupForm onSubmit={handleSubmit} didRegister={didRegister} />
         </DialogContent>
       </Dialog>
     </Fragment>

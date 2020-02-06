@@ -35,6 +35,9 @@ const useStyles = makeStyles(theme => ({
     height: 50,
     textTransform: 'none',
   },
+  submitButtonSuccess: {
+    background: theme.palette.success.main,
+  },
   submitButtonProgress: {
     color: theme.palette.primary.main,
     position: 'absolute',
@@ -45,9 +48,20 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const SignupForm = ({ onSubmit }) => {
+const SignupForm = ({ onSubmit, didRegister }) => {
   const classes = useStyles()
-  const { root, form, nameGrid, submitButtonWrapper, submitButton, submitButtonProgress } = classes
+  const {
+    root,
+    form,
+    nameGrid,
+    submitButtonWrapper,
+    submitButton,
+    submitButtonSuccess,
+    submitButtonProgress,
+  } = classes
+
+  const withSuccess = didRegister ? submitButtonSuccess : ''
+  const submitButtonClassName = `${submitButton} ${withSuccess}`
 
   return (
     <Formik
@@ -76,6 +90,7 @@ const SignupForm = ({ onSubmit }) => {
             <Grid item>
               <TextField className={field} variant="filled" label="First Name" name="first_name" />
             </Grid>
+
             <Grid item>
               <TextField className={field} variant="filled" label="Last Name" name="last_name" />
             </Grid>
@@ -104,15 +119,16 @@ const SignupForm = ({ onSubmit }) => {
 
           <div className={submitButtonWrapper}>
             <Button
-              className={submitButton}
+              className={submitButtonClassName}
               variant="contained"
               size="large"
               color="primary"
               disabled={isSubmitting}
               onClick={submitForm}
             >
-              Create Account
+              {didRegister ? 'Account created successfully!' : 'Create Account'}
             </Button>
+
             {isSubmitting && <CircularProgress size={24} className={submitButtonProgress} />}
           </div>
         </Form>

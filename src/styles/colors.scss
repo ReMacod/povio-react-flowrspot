@@ -3,6 +3,8 @@ $dark: #000000;
 $gray: #949ea0;
 $grayLight: #cccccc;
 $orange: #e4988d;
+$green: #32cd32;
+$red: #dc143c;
 
 :export {
   light: $light;
@@ -10,4 +12,6 @@ $orange: #e4988d;
   gray: $gray;
   grayLight: $grayLight;
   orange: $orange;
+  green: $green;
+  red: $red;
 }

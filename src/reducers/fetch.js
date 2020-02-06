@@ -1,65 +1,73 @@
-import { actions as loadingActions } from './Loading'
-const { loadingStart, loadingEnding, loadingEnd } = loadingActions
+/* ACTIONS */
 
-/* IS_FETCHING */
-
-export const withIsFetchingTrue = ({ state }) => ({ ...state, isFetching: true })
-export const withIsFetchingFalse = ({ state }) => ({ ...state, isFetching: false })
-
-/* ERROR */
-
-export const withError = ({ state, error }) => ({ ...state, error })
-
-/* DISPATCH MULTIPLE */
-
-const dispatchMultiple = ({ dispatch, actions, data }) => {
-  if (Array.isArray(actions)) {
-    actions.forEach(action => {
-      dispatch(action(data))
-    })
-    return
-  }
-
-  dispatch(actions(data))
-}
-
-const dispatchMultipleWithEnd = ({ dispatch, actions, data }) => {
-  dispatch(loadingEnd())
-
-  dispatchMultiple({ dispatch, actions, data })
+export const fetchActions = ({ actions, THUNK_NAME }) => {
+  /* prettier-ignore */
+  return ({
+    onStart: actions[`${THUNK_NAME}Start`],
+    onSuccess: actions[`${THUNK_NAME}Success`],
+    onFailed: actions[`${THUNK_NAME}Failed`],
+  })
 }
 
 /* FETCH */
 
-export const handleFetchStart = ({ dispatch, start, loadingConfig = {} }) => {
-  dispatch(loadingStart(loadingConfig))
-  dispatch(start())
-}
+export const checkIsFetching = ({ getState, SLICE_NAME, reject, error }) => {
+  const state = getState()
 
-export const handleFetchEnd = async ({ dispatch, request, success, failed }) => {
-  try {
-    const response = await request()
-    const { status } = response
+  const { isFetching } = state[SLICE_NAME]
 
-    if (status !== 200) {
-      const jsonError = await response.json()
-      dispatchMultipleWithEnd({ dispatch, actions: failed, data: jsonError })
-      return
-    }
-
-    const jsonData = await response.json()
-
-    dispatchMultipleWithEnd({ dispatch, actions: success, data: jsonData })
-  } catch (error) {
-    const message = (error || {}).message || 'Something went wrong'
-    dispatchMultipleWithEnd({ dispatch, actions: failed, data: message })
+  if (isFetching) {
+    reject(new Error(error))
   }
+
+  return isFetching
 }
 
-export const handleFetchEndDelayed = ({ delay = 500, dispatch, request, success, failed }) => {
+export const doFetch = ({ dispatch, request }) =>
+  new Promise(async (fulfill, reject) => {
+    try {
+      const response = await request()
+      const { status } = response
+      const jsonResponse = await response.json()
+
+      if (status !== 200) {
+        reject(jsonResponse)
+        return
+      }
+
+      fulfill(jsonResponse)
+    } catch (error) {
+      console.log('handleFetch error', error)
+
+      const message = (error || {}).message || 'Something went wrong'
+      const errorFormatted = { ...error, error: message }
+
+      reject(errorFormatted)
+    }
+  })
+
+export const handleFetch = ({ dispatch, request, fulfill, reject, onSuccess, onFailed }) => {
+  const handleSuccess = result => {
+    dispatch(onSuccess(result))
+    fulfill(result)
+  }
+
+  const handleFailed = error => {
+    dispatch(onFailed(error))
+    reject(error)
+  }
+
+  doFetch({ dispatch, request })
+    .then(handleSuccess)
+    .catch(handleFailed)
+}
+
+/* LOADING */
+
+export const delayLoadingEnd = ({ delay = 500, dispatch, loadingEnding, loadingEnd }) => {
   dispatch(loadingEnding())
 
   setTimeout(() => {
-    handleFetchEnd({ dispatch, request, success, failed })
+    dispatch(loadingEnd())
   }, delay)
 }
