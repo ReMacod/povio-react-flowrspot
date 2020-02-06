@@ -1,9 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 import { optionsGet, optionsPost } from '../../api/fetch'
-import { usersRegister as userSignup, usersMe } from '../../api/endpoints'
 
-import { checkIsFetching, handleFetch } from '../fetch'
+import { usersRegister as userSignup, usersLogin as userSignin, usersMe } from '../../api/endpoints'
+
+import { checkIsFetching, fetchActions, handleFetch } from '../fetch'
 
 const initialFetchingState = {
   isFetching: false,
@@ -26,6 +27,20 @@ const initialState = {
   ...initialUserState,
 }
 
+/* USER INFO */
+
+const userInfoStart = (state, action) => ({ ...state, ...initialFetchingState, isFetching: true })
+const userInfoSuccess = (state, action) => ({
+  ...state,
+  ...initialFetchingState,
+  user: action.payload.user,
+})
+const userInfoFailed = (state, action) => ({
+  state,
+  ...initialFetchingState,
+  error: action.payload.error,
+})
+
 /* SIGNUP */
 
 const signupUserStart = (state, action) => ({ ...state, ...initialFetchingState, isFetching: true })
@@ -41,17 +56,18 @@ const signupUserFailed = (state, action) => ({
   error: action.payload.error,
 })
 
-/* USER INFO */
+/* SIGNIN */
 
-const userInfoStart = (state, action) => ({ ...state, ...initialFetchingState, isFetching: true })
-const userInfoSuccess = (state, action) => ({
+const signinUserStart = (state, action) => ({ ...state, ...initialFetchingState, isFetching: true })
+const signinUserSuccess = (state, action) => ({
   ...state,
   ...initialFetchingState,
-  user: action.payload.user,
+  auth_token: action.payload.auth_token,
 })
-const userInfoFailed = (state, action) => ({
-  state,
+const signinUserFailed = (state, action) => ({
+  ...state,
   ...initialFetchingState,
+  ...initialUserState,
   error: action.payload.error,
 })
 
@@ -63,12 +79,15 @@ const userSlice = createSlice({
   name: SLICE_NAME,
   initialState,
   reducers: {
-    signupUserStart,
-    signupUserSuccess,
-    signupUserFailed,
     userInfoStart,
     userInfoSuccess,
     userInfoFailed,
+    signupUserStart,
+    signupUserSuccess,
+    signupUserFailed,
+    signinUserStart,
+    signinUserSuccess,
+    signinUserFailed,
   },
 })
 
@@ -82,14 +101,9 @@ export const userInfo = () => (dispatch, getState) =>
       return
     }
 
-    /* prettier-ignore */
-    const {
-      userInfoStart: start,
-      userInfoSuccess: onSuccess,
-      userInfoFailed: onFailed
-    } = actions
+    const { onStart, onSuccess, onFailed } = fetchActions({ actions, THUNK_NAME: 'userInfo' })
 
-    dispatch(start())
+    dispatch(onStart())
 
     const state = getState()
     const { auth_token } = state.user
@@ -111,17 +125,28 @@ export const signupUser = ({ body } = {}) => (dispatch, getState) =>
       return
     }
 
-    /* prettier-ignore */
-    const {
-      signupUserStart: start,
-      signupUserSuccess: onSuccess,
-      signupUserFailed: onFailed,
-    } = actions
+    const { onStart, onSuccess, onFailed } = fetchActions({ actions, THUNK_NAME: 'signupUser' })
 
-    dispatch(start())
+    dispatch(onStart())
 
     const options = { ...optionsPost, body: JSON.stringify(body) }
     const request = () => fetch(userSignup, options)
+
+    handleFetch({ dispatch, request, fulfill, reject, onSuccess, onFailed })
+  })
+
+export const signinUser = ({ body } = {}) => (dispatch, getState) =>
+  new Promise((fulfill, reject) => {
+    if (checkIsFetching({ getState, SLICE_NAME, reject, error: 'Already signing in' })) {
+      return
+    }
+
+    const { onStart, onSuccess, onFailed } = fetchActions({ actions, THUNK_NAME: 'signinUser' })
+
+    dispatch(onStart())
+
+    const options = { ...optionsPost, body: JSON.stringify(body) }
+    const request = () => fetch(userSignin, options)
 
     handleFetch({ dispatch, request, fulfill, reject, onSuccess, onFailed })
   })

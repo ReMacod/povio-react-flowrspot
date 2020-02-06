@@ -1,6 +1,6 @@
 import React, { useState, Fragment } from 'react'
 import { connect } from 'react-redux'
-import Fab from '@material-ui/core/Fab'
+import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
@@ -11,15 +11,15 @@ import { makeStyles } from '@material-ui/core/styles'
 
 import { useHistory } from 'react-router-dom'
 
-import SignupForm from '../SignupForm'
+import SigninForm from '../SigninForm'
 
-import { signupUser, userInfo } from '../../reducers/User'
+import { signinUser, userInfo } from '../../reducers/User'
 
 import { formatAPIError } from '../../utils/Error'
 import { withDelay } from '../../utils/Delay'
 
 const useStyles = makeStyles(theme => ({
-  fabButton: {
+  button: {
     textTransform: 'none',
     paddingLeft: '1.5rem !important',
     paddingRight: '1.5rem !important',
@@ -39,11 +39,11 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const SignupButton = ({ dispatch, user }) => {
+const SigninButton = ({ dispatch, user }) => {
   const { error } = user
 
   const [isOpen, setIsOpen] = useState(false)
-  const [didRegister, setDidRegister] = useState(false)
+  const [didLogin, setDidLogin] = useState(false)
 
   const history = useHistory()
 
@@ -51,47 +51,40 @@ const SignupButton = ({ dispatch, user }) => {
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'))
 
   const classes = useStyles()
-  const { fabButton, dialog, dialogTitle, dialogContent, alert } = classes
+  const { button, dialog, dialogTitle, dialogContent, alert } = classes
 
   const handleClickOpen = () => setIsOpen(true)
   const handleClose = () => setIsOpen(false)
 
-  const handleRegister = () => {
+  const handleLogin = () => {
     dispatch(userInfo())
       .then(() => {
         setIsOpen(false)
         history.push('/user')
       })
       .catch(error => {
-        console.log('SignupButton handleRegister error', error)
+        console.log('SigninButton handleLogin error', error)
       })
   }
 
   const handleSubmit = (values, { setSubmitting }) => {
-    setDidRegister(false)
+    setDidLogin(false)
 
-    dispatch(signupUser({ body: values }))
+    dispatch(signinUser({ body: values }))
       .then(() => {
         setSubmitting(false)
-        setDidRegister(true)
+        setDidLogin(true)
 
-        withDelay({ func: () => handleRegister({ setSubmitting }) })
+        withDelay({ func: () => handleLogin({ setSubmitting }) })
       })
       .catch(error => setSubmitting(false))
   }
 
   return (
     <Fragment>
-      <Fab
-        variant="extended"
-        size="medium"
-        color="primary"
-        aria-label="add"
-        className={fabButton}
-        onClick={handleClickOpen}
-      >
-        New Account
-      </Fab>
+      <Button className={button} onClick={handleClickOpen}>
+        Login
+      </Button>
 
       <Dialog
         className={dialog}
@@ -102,7 +95,7 @@ const SignupButton = ({ dispatch, user }) => {
         aria-labelledby="responsive-dialog-title"
       >
         <DialogTitle id="responsive-dialog-title" className={dialogTitle}>
-          {'Create an Account'}
+          {'Welcome Back'}
         </DialogTitle>
 
         {error && (
@@ -112,7 +105,7 @@ const SignupButton = ({ dispatch, user }) => {
         )}
 
         <DialogContent className={dialogContent}>
-          <SignupForm onSubmit={handleSubmit} didSuceed={didRegister} />
+          <SigninForm onSubmit={handleSubmit} didSuceed={didLogin} />
         </DialogContent>
       </Dialog>
     </Fragment>
@@ -125,4 +118,4 @@ const redux = [
   }),
 ]
 
-export default connect(...redux)(SignupButton)
+export default connect(...redux)(SigninButton)

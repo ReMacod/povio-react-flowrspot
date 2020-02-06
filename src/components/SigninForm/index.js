@@ -1,7 +1,6 @@
 import React from 'react'
 import classNames from 'classnames'
 import { Formik, Form } from 'formik'
-import Grid from '@material-ui/core/Grid'
 import { Button } from '@material-ui/core'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import { TextField } from 'formik-material-ui'
@@ -25,10 +24,6 @@ const useStyles = makeStyles(theme => ({
       width: '100%',
     },
   },
-  nameGrid: {
-    width: 'calc(100% + 8px)',
-    flexWrap: 'nowrap',
-  },
   submitButtonWrapper: {
     position: 'relative',
   },
@@ -50,10 +45,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const SignupSchema = Yup.object().shape({
-  first_name: Yup.string().required('Required'),
-  last_name: Yup.string().required('Required'),
-  date_of_birth: Yup.string().required('Required'),
+const SigninSchema = Yup.object().shape({
   email: Yup.string()
     .email('Invalid email')
     .required('Required'),
@@ -62,12 +54,11 @@ const SignupSchema = Yup.object().shape({
     .required('Required'),
 })
 
-export default function SignupForm({ onSubmit, didSuceed }) {
+export default function SigninForm({ onSubmit, didSuceed }) {
   const classes = useStyles()
   const {
     root,
     form,
-    nameGrid,
     submitButtonWrapper,
     submitButton,
     submitButtonSuccess,
@@ -81,33 +72,14 @@ export default function SignupForm({ onSubmit, didSuceed }) {
     <Formik
       className={root}
       initialValues={{
-        first_name: '',
-        last_name: '',
-        date_of_birth: '',
         email: '',
         password: '',
       }}
-      validationSchema={SignupSchema}
+      validationSchema={SigninSchema}
       onSubmit={onSubmit}
     >
       {({ submitForm, isSubmitting, errors, touched }) => (
         <Form className={form}>
-          <Grid className={nameGrid} container spacing={1}>
-            <Grid item>
-              <TextField className={field} variant="filled" label="First Name" name="first_name" />
-            </Grid>
-
-            <Grid item>
-              <TextField className={field} variant="filled" label="Last Name" name="last_name" />
-            </Grid>
-          </Grid>
-
-          <TextField
-            className={field}
-            variant="filled"
-            label="Date of Birth"
-            name="date_of_birth"
-          />
           <TextField
             className={field}
             variant="filled"
@@ -115,6 +87,7 @@ export default function SignupForm({ onSubmit, didSuceed }) {
             type="email"
             label="Email Address"
           />
+
           <TextField
             className={field}
             variant="filled"
@@ -132,7 +105,7 @@ export default function SignupForm({ onSubmit, didSuceed }) {
               disabled={isSubmitting || isFormError({ errors, touched })}
               onClick={submitForm}
             >
-              {didSuceed ? 'Account created successfully!' : 'Create Account'}
+              {didSuceed ? 'Logged in successfully!' : 'Login to your Account'}
             </Button>
 
             {isSubmitting && <CircularProgress size={24} className={submitButtonProgress} />}

@@ -64,7 +64,7 @@ export const handleFetch = ({ dispatch, request, fulfill, reject, onSuccess, onF
 
 /* LOADING */
 
-export const delayLoadingEnd = ({ delay = 500, dispatch, loadingEnding, loadingEnd }) => {
+export const delayLoadingEnd = ({ delay = 1000, dispatch, loadingEnding, loadingEnd }) => {
   dispatch(loadingEnding())
 
   setTimeout(() => {

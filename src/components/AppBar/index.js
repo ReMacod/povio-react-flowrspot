@@ -7,6 +7,8 @@ import MenuIcon from '@material-ui/icons/Menu'
 
 import IconLogo from '../IconLogo'
 import ButtonLink from '../ButtonLink'
+
+import SigninButton from '../SigninButton'
 import SignupButton from '../SignupButton'
 
 const useStyles = makeStyles(theme => ({
@@ -98,8 +100,8 @@ export default function AppBar() {
             <ButtonLink classes={buttonLinkClasses} label="Flowers" linkTo="/flowers" />
             <ButtonLink classes={buttonLinkClasses} label="Latest Sightings" linkTo="/sightings" />
             <ButtonLink classes={buttonLinkClasses} label="Favorites" linkTo="/favorites" />
-            <ButtonLink classes={buttonLinkClasses} label="Login" linkTo="/" />
 
+            <SigninButton />
             <SignupButton />
           </div>
 

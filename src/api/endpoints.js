@@ -4,4 +4,5 @@ export const flowers = `${API}/flowers`
 export const flowersSearch = `${API}/flowers/search`
 
 export const usersRegister = `${API}/users/register`
+export const usersLogin = `${API}/users/login`
 export const usersMe = `${API}/users/me`
