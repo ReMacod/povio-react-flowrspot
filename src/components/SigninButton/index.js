@@ -13,10 +13,11 @@ import { makeStyles } from '@material-ui/core/styles'
 
 import SigninForm from '../SigninForm'
 
-import { signinUser, userInfo, userSightings } from '../../reducers/User'
-
 import { formatAPIError } from '../../utils/Error'
 import { withDelay } from '../../utils/Delay'
+
+import { actions, signinUser, userInfo, userSightings } from '../../reducers/User'
+const { resetFetching } = actions
 
 const DIALOG_WIDTH = 380
 
@@ -95,6 +96,7 @@ const SigninButton = ({ dispatch, user, onOpen: maybeOnOpen, DialogHeader = () =
     setIsOpen(true)
   }
   const handleClose = () => {
+    dispatch(resetFetching())
     onOpen(false)
     setIsOpen(false)
   }

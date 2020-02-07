@@ -8,6 +8,8 @@ import { fetchActions, checkIsFetching, handleFetch, delayLoadingEnd } from '../
 import { actions as loadingActions } from '../Loading'
 const { loadingStart, loadingEnding, loadingEnd } = loadingActions
 
+/* STATE */
+
 const initialFetchingState = {
   isFetching: false,
   error: null,
@@ -34,6 +36,10 @@ const initialState = {
   //   },
   // },
 }
+
+/* FETCHING */
+
+const resetFetching = (state, action) => ({ ...state, ...initialFetchingState })
 
 /* LIST */
 
@@ -79,9 +85,12 @@ const slice = createSlice({
   name: SLICE_NAME,
   initialState,
   reducers: {
+    resetFetching,
+    // listFlowers
     listFlowersStart,
     listFlowersSuccess,
     listFlowersFailed,
+    // searchFlowers
     searchFlowersStart,
     searchFlowersSuccess,
     searchFlowersFailed,

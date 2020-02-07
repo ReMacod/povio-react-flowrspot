@@ -5,6 +5,8 @@ import { sightingsList } from '../../api/endpoints'
 
 import { checkIsFetching, fetchActions, handleFetch } from '../fetch'
 
+/* STATE */
+
 const initialFetchingState = {
   isFetching: false,
   error: null,
@@ -32,6 +34,10 @@ const initialState = {
   // },
 }
 
+/* FETCHING */
+
+const resetFetching = (state, action) => ({ ...state, ...initialFetchingState })
+
 /* LIST SIGHTINGS */
 
 const listSightingsStart = (state, action) => ({
@@ -58,6 +64,7 @@ const slice = createSlice({
   name: SLICE_NAME,
   initialState,
   reducers: {
+    resetFetching,
     listSightingsStart,
     listSightingsSuccess,
     listSightingsFailed,

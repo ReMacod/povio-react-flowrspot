@@ -11,6 +11,8 @@ import {
 
 import { checkIsFetching, fetchActions, handleFetch } from '../fetch'
 
+/* STATE */
+
 const initialFetchingState = {
   isFetching: false,
   error: null,
@@ -55,6 +57,10 @@ const initialState = {
     ...initialUserSightingsState,
   },
 }
+
+/* FETCHING */
+
+const resetFetching = (state, action) => ({ ...state, ...initialFetchingState })
 
 /* USER INFO */
 
@@ -154,6 +160,7 @@ const slice = createSlice({
   name: SLICE_NAME,
   initialState,
   reducers: {
+    resetFetching,
     // userInfo
     userInfoStart,
     userInfoSuccess,
