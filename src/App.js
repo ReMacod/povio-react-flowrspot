@@ -9,6 +9,7 @@ import theme from './styles/theme'
 import Flowers from './routes/Flowers'
 import Sightings from './routes/Sightings'
 import Favorites from './routes/Favorites'
+import NotFound from './routes/NotFound'
 
 import LayoutSwitcher from './layouts/Switcher'
 import LayoutMain from './layouts/Main'
@@ -35,7 +36,7 @@ const routes = () => (
     <Route path="/sightings" exact component={Sightings} />
     <Route path="/favorites" exact component={Favorites} />
     {/* TODO: style 404 page */}
-    <Route path="*" component={() => <div>404</div>} />
+    <Route path="*" component={NotFound} />
   </Switch>
 )
 

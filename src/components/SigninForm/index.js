@@ -54,7 +54,7 @@ const SigninSchema = Yup.object().shape({
     .required('Required'),
 })
 
-export default function SigninForm({ onSubmit, didSuceed }) {
+export default function SigninForm({ onSubmit, didSucceed }) {
   const classes = useStyles()
   const {
     root,
@@ -65,7 +65,7 @@ export default function SigninForm({ onSubmit, didSuceed }) {
     submitButtonProgress,
   } = classes
 
-  const withSuccess = didSuceed ? submitButtonSuccess : ''
+  const withSuccess = didSucceed ? submitButtonSuccess : ''
   const submitButtonClassName = `${submitButton} ${withSuccess}`
 
   return (
@@ -105,7 +105,7 @@ export default function SigninForm({ onSubmit, didSuceed }) {
               disabled={isSubmitting || isFormError({ errors, touched })}
               onClick={submitForm}
             >
-              {didSuceed ? 'Logged in successfully!' : 'Login to your Account'}
+              {didSucceed ? 'Logged in!' : 'Login to your Account'}
             </Button>
 
             {isSubmitting && <CircularProgress size={24} className={submitButtonProgress} />}

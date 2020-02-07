@@ -5,6 +5,7 @@ import Dialog from '@material-ui/core/Dialog'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Alert from '@material-ui/lab/Alert'
+import Grid from '@material-ui/core/Grid'
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
@@ -13,18 +14,20 @@ import { makeStyles } from '@material-ui/core/styles'
 
 import { useHistory } from 'react-router-dom'
 
-import SigninForm from '../SigninForm'
+import ProfileForm from '../ProfileForm'
 
-import { signinUser, userInfo } from '../../reducers/User'
+import { logoutUser } from '../../reducers/User'
 
 import { formatAPIError } from '../../utils/Error'
 import { withDelay } from '../../utils/Delay'
 
-const DIALOG_WIDTH = 380
+import Avatar from '../../assets/images/avatar.png'
+
+const DIALOG_WIDTH = 600
+const DIALOG_PADDING = 110
 
 const useStyles = makeStyles(theme => ({
   button: {
-    color: theme.palette.primary.main,
     textTransform: 'none',
     paddingLeft: '1.5rem !important',
     paddingRight: '1.5rem !important',
@@ -34,30 +37,47 @@ const useStyles = makeStyles(theme => ({
       backgroundColor: 'transparent',
     },
   },
-  dialogClose: {
-    display: 'none',
-    width: 50,
-    position: 'absolute',
-    top: 7,
-    right: 25,
-    color: theme.palette.gray.main,
-
-    '&.fullScreen': {
-      display: 'block',
+  dialog: {
+    '.MuiDialog-container': {
+      '.MuiPaper-root': {
+        alignItems: 'center',
+      },
     },
   },
-  dialogTitle: {
+  dialogClose: {
+    width: 50,
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    color: theme.palette.gray.main,
+  },
+  dialogTitleWrapper: {
     width: DIALOG_WIDTH,
-    textAlign: 'center',
-    fontSize: 20,
+    marginTop: 60,
+    padding: `0 ${DIALOG_PADDING}px 30px`,
 
     '&.fullScreen': {
       width: '100%',
     },
   },
+  dialogWrapper: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+  },
+  dialogTitle: {
+    fontSize: 20,
+    fontWeight: 300,
+    margin: 0,
+  },
+  dialogSubtitle: {
+    fontSize: 13,
+    color: theme.palette.gray.main,
+    margin: 0,
+  },
   dialogContent: {
     width: DIALOG_WIDTH,
-    padding: '0 30px 30px',
+    padding: `0 ${DIALOG_PADDING}px 30px`,
 
     '&.fullScreen': {
       width: '100%',
@@ -68,11 +88,14 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const SigninButton = ({ dispatch, user }) => {
-  const { error } = user
+const ProfileButton = ({ dispatch, user }) => {
+  const { error, user: userProfile } = user
+  const { first_name, last_name } = userProfile
+
+  const fullName = `${first_name} ${last_name}`
 
   const [isOpen, setIsOpen] = useState(false)
-  const [didLogin, setDidLogin] = useState(false)
+  const [didLogout, setDidLogout] = useState(false)
 
   const history = useHistory()
 
@@ -80,55 +103,69 @@ const SigninButton = ({ dispatch, user }) => {
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'))
 
   const classes = useStyles()
-  const { button, dialog, dialogClose, dialogTitle, dialogContent, alert } = classes
+  const {
+    button,
+    dialog,
+    dialogClose,
+    dialogTitleWrapper,
+    dialogWrapper,
+    dialogTitle,
+    dialogSubtitle,
+    dialogContent,
+    alert,
+  } = classes
 
-  const dialogCloseClassName = `${dialogClose} ${fullScreen ? 'fullScreen' : ''}`
-  const dialogTitleClassName = `${dialogTitle} ${fullScreen ? 'fullScreen' : ''}`
+  const dialogTitleClassName = `${dialogTitleWrapper} ${fullScreen ? 'fullScreen' : ''}`
   const dialogContentClassName = `${dialogContent} ${fullScreen ? 'fullScreen' : ''}`
 
   const handleClickOpen = () => setIsOpen(true)
   const handleClose = () => setIsOpen(false)
 
-  const handleLogin = () => {
-    dispatch(userInfo())
-      .then(() => {
-        setIsOpen(false)
-        history.push('/user')
-      })
-      .catch(error => {
-        console.log('SigninButton handleLogin error', error)
-      })
-  }
-
+  // Optimistic logout
   const handleSubmit = (values, { setSubmitting }) => {
-    setDidLogin(false)
+    setDidLogout(false)
 
-    dispatch(signinUser({ body: values }))
-      .then(() => {
+    withDelay({
+      delay: 300,
+      func: () => {
         setSubmitting(false)
-        setDidLogin(true)
+        setDidLogout(true)
+      },
+    })
 
-        withDelay({ func: () => handleLogin({ setSubmitting }) })
-      })
-      .catch(error => setSubmitting(false))
+    withDelay({
+      delay: 600,
+      func: () => {
+        setIsOpen(false)
+        history.push('/')
+      },
+    })
+
+    withDelay({
+      delay: 700,
+      func: () =>
+        dispatch(logoutUser())
+          .then(() => {})
+          .catch(error => setSubmitting(false)),
+    })
   }
 
   return (
     <Fragment>
       <Button className={button} onClick={handleClickOpen}>
-        Login
+        {fullName}
       </Button>
 
       <Dialog
         className={dialog}
         fullScreen={fullScreen}
-        maxWidth="xs"
+        maxWidth="sm"
         open={isOpen}
         onClose={handleClose}
         aria-labelledby="responsive-dialog-title"
       >
         <IconButton
-          className={dialogCloseClassName}
+          className={dialogClose}
           edge="start"
           color="inherit"
           onClick={handleClose}
@@ -136,9 +173,17 @@ const SigninButton = ({ dispatch, user }) => {
         >
           <CloseIcon />
         </IconButton>
-
         <DialogTitle id="responsive-dialog-title" className={dialogTitleClassName}>
-          {'Welcome Back'}
+          <Grid container spacing={3}>
+            <Grid item>
+              <img src={Avatar} alt="Avatar" />
+            </Grid>
+
+            <Grid item className={dialogWrapper}>
+              <h2 className={dialogTitle}>{fullName}</h2>
+              <p className={dialogSubtitle}>47 sightings</p>
+            </Grid>
+          </Grid>
         </DialogTitle>
 
         {error && (
@@ -148,7 +193,7 @@ const SigninButton = ({ dispatch, user }) => {
         )}
 
         <DialogContent className={dialogContentClassName}>
-          <SigninForm onSubmit={handleSubmit} didSucceed={didLogin} />
+          <ProfileForm user={userProfile} onSubmit={handleSubmit} didSucceed={didLogout} />
         </DialogContent>
       </Dialog>
     </Fragment>
@@ -161,4 +206,4 @@ const redux = [
   }),
 ]
 
-export default connect(...redux)(SigninButton)
+export default connect(...redux)(ProfileButton)

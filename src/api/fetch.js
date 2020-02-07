@@ -13,3 +13,12 @@ export const optionsPost = {
     'Content-Type': 'application/json',
   },
 }
+
+export const optionsPut = {
+  ...optionsPost,
+  method: 'PUT',
+  headers: {
+    ...optionsGet.headers,
+    'Content-Type': 'application/json',
+  },
+}

@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-import { optionsGet, optionsPost } from '../../api/fetch'
+import { optionsGet, optionsPost, optionsPut } from '../../api/fetch'
 
 import { usersRegister as userSignup, usersLogin as userSignin, usersMe } from '../../api/endpoints'
 
@@ -71,6 +71,34 @@ const signinUserFailed = (state, action) => ({
   error: action.payload.error,
 })
 
+/* UPDATE */
+
+const updateUserStart = (state, action) => ({ ...state, ...initialFetchingState, isFetching: true })
+const updateUserSuccess = (state, action) => ({
+  ...state,
+  ...initialFetchingState,
+  user: action.payload.user,
+})
+const updateUserFailed = (state, action) => ({
+  ...state,
+  ...initialFetchingState,
+  error: action.payload.error,
+})
+
+/* LOGOUT */
+
+const logoutUserStart = (state, action) => ({ ...state, ...initialFetchingState, isFetching: true })
+const logoutUserSuccess = (state, action) => ({
+  ...state,
+  ...initialFetchingState,
+  ...initialUserState,
+})
+const logoutUserFailed = (state, action) => ({
+  ...state,
+  ...initialFetchingState,
+  error: action.payload.error,
+})
+
 /* SLICE */
 
 const SLICE_NAME = 'user'
@@ -79,15 +107,26 @@ const userSlice = createSlice({
   name: SLICE_NAME,
   initialState,
   reducers: {
+    // userInfo
     userInfoStart,
     userInfoSuccess,
     userInfoFailed,
+    // signupUser
     signupUserStart,
     signupUserSuccess,
     signupUserFailed,
+    // signinUser
     signinUserStart,
     signinUserSuccess,
     signinUserFailed,
+    // updateUser
+    updateUserStart,
+    updateUserSuccess,
+    updateUserFailed,
+    // logoutUser
+    logoutUserStart,
+    logoutUserSuccess,
+    logoutUserFailed,
   },
 })
 
@@ -147,6 +186,42 @@ export const signinUser = ({ body } = {}) => (dispatch, getState) =>
 
     const options = { ...optionsPost, body: JSON.stringify(body) }
     const request = () => fetch(userSignin, options)
+
+    handleFetch({ dispatch, request, fulfill, reject, onSuccess, onFailed })
+  })
+
+// FIX: Fetch here doesn't work
+export const updateUser = ({ body } = {}) => (dispatch, getState) =>
+  new Promise((fulfill, reject) => {
+    if (checkIsFetching({ getState, SLICE_NAME, reject, error: 'Already updating profile' })) {
+      return
+    }
+
+    const { onStart, onSuccess, onFailed } = fetchActions({ actions, THUNK_NAME: 'updateUser' })
+
+    dispatch(onStart())
+
+    const options = { ...optionsPut, body: JSON.stringify(body) }
+    const request = () => fetch(usersMe, options)
+
+    handleFetch({ dispatch, request, fulfill, reject, onSuccess, onFailed })
+  })
+
+// FIX: There is no logout endpoint in API to revoke the auth_token
+export const logoutUser = ({ body } = {}) => (dispatch, getState) =>
+  new Promise((fulfill, reject) => {
+    if (checkIsFetching({ getState, SLICE_NAME, reject, error: 'Already logging out user' })) {
+      return
+    }
+
+    const { onStart, onSuccess, onFailed } = fetchActions({ actions, THUNK_NAME: 'logoutUser' })
+
+    dispatch(onStart())
+
+    // const options = { ...optionsPost, body: JSON.stringify(body) }
+    // const request = () => fetch(usersLogout, options)
+    const mockResponse = new Response(JSON.stringify({ auth_token: null }), { status: 200 })
+    const request = () => mockResponse
 
     handleFetch({ dispatch, request, fulfill, reject, onSuccess, onFailed })
   })

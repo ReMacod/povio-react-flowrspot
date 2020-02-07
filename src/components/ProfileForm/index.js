@@ -1,12 +1,11 @@
 import React from 'react'
 import classNames from 'classnames'
 import { Formik, Form } from 'formik'
-import Grid from '@material-ui/core/Grid'
 import { Button } from '@material-ui/core'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import { TextField } from 'formik-material-ui'
 import { makeStyles } from '@material-ui/core/styles'
-import * as Yup from 'yup'
+import * as yup from 'yup'
 
 import './style.sass'
 
@@ -25,16 +24,16 @@ const useStyles = makeStyles(theme => ({
       width: '100%',
     },
   },
-  nameGrid: {
-    width: 'calc(100% + 8px)',
-    flexWrap: 'nowrap',
-  },
   submitButtonWrapper: {
     position: 'relative',
+    display: 'flex',
+    justifyContent: 'center',
+    margin: '40px 0',
   },
   submitButton: {
     marginTop: 10,
     height: 50,
+    width: 150,
     textTransform: 'none',
   },
   submitButtonSuccess: {
@@ -50,24 +49,24 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const SignupSchema = Yup.object().shape({
-  first_name: Yup.string().required('Required'),
-  last_name: Yup.string().required('Required'),
-  date_of_birth: Yup.string().required('Required'),
-  email: Yup.string()
+const SignupSchema = yup.object().shape({
+  first_name: yup.string().required('Required'),
+  last_name: yup.string().required('Required'),
+  date_of_birth: yup.string().required('Required'),
+  email: yup
+    .string()
     .email('Invalid email')
-    .required('Required'),
-  password: Yup.string()
-    .min(8, 'Too Short!')
     .required('Required'),
 })
 
-export default function SignupForm({ onSubmit, didSucceed }) {
+const mockDateOfBirth = 'May 20, 1980'
+const mockEmail = 'michael.berry@gmail.com'
+
+export default function SignupForm({ user = {}, onSubmit, didSucceed }) {
   const classes = useStyles()
   const {
     root,
     form,
-    nameGrid,
     submitButtonWrapper,
     submitButton,
     submitButtonSuccess,
@@ -77,51 +76,31 @@ export default function SignupForm({ onSubmit, didSucceed }) {
   const withSuccess = didSucceed ? submitButtonSuccess : ''
   const submitButtonClassName = `${submitButton} ${withSuccess}`
 
+  const {
+    first_name = '',
+    last_name = '',
+    date_of_birth = mockDateOfBirth,
+    email = mockEmail,
+  } = user
+
   return (
     <Formik
       className={root}
       initialValues={{
-        first_name: '',
-        last_name: '',
-        date_of_birth: '',
-        email: '',
-        password: '',
+        first_name,
+        last_name,
+        date_of_birth,
+        email,
       }}
       validationSchema={SignupSchema}
       onSubmit={onSubmit}
     >
       {({ submitForm, isSubmitting, errors, touched }) => (
         <Form className={form}>
-          <Grid className={nameGrid} container spacing={1}>
-            <Grid item>
-              <TextField className={field} variant="filled" label="First Name" name="first_name" />
-            </Grid>
-
-            <Grid item>
-              <TextField className={field} variant="filled" label="Last Name" name="last_name" />
-            </Grid>
-          </Grid>
-
-          <TextField
-            className={field}
-            variant="filled"
-            label="Date of Birth"
-            name="date_of_birth"
-          />
-          <TextField
-            className={field}
-            variant="filled"
-            name="email"
-            type="email"
-            label="Email Address"
-          />
-          <TextField
-            className={field}
-            variant="filled"
-            type="password"
-            label="Password"
-            name="password"
-          />
+          <TextField className={field} label="First Name" name="first_name" />
+          <TextField className={field} label="Last Name" name="last_name" />
+          <TextField className={field} label="Date of Birth" name="date_of_birth" />
+          <TextField className={field} name="email" type="email" label="Email Address" />
 
           <div className={submitButtonWrapper}>
             <Button
@@ -132,7 +111,7 @@ export default function SignupForm({ onSubmit, didSucceed }) {
               disabled={isSubmitting || isFormError({ errors, touched })}
               onClick={submitForm}
             >
-              {didSucceed ? 'Account created!' : 'Create Account'}
+              {didSucceed ? 'Logged out!' : 'Logout'}
             </Button>
 
             {isSubmitting && <CircularProgress size={24} className={submitButtonProgress} />}

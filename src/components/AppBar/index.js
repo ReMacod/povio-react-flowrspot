@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { Fragment } from 'react'
+import { connect } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles'
 import MuiAppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
@@ -10,6 +11,7 @@ import ButtonLink from '../ButtonLink'
 
 import SigninButton from '../SigninButton'
 import SignupButton from '../SignupButton'
+import ProfileButton from '../ProfileButton'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -50,14 +52,19 @@ const brandLinkStyles = makeStyles(theme => ({
   icon: {
     marginRight: -theme.spacing(1),
     fontSize: '1rem',
+
+    '&:hover': {
+      backgroundColor: 'transparent',
+    },
   },
   button: {
     fontSize: '1rem',
     fontWeight: 'bold',
     color: theme.palette.primary.main,
     textTransform: 'none',
+
     '&:hover': {
-      backgroundColor: theme.palette.light.main,
+      backgroundColor: 'transparent',
     },
   },
 }))
@@ -71,10 +78,16 @@ const buttonLinkStyles = makeStyles(theme => ({
     textTransform: 'none',
     paddingLeft: '30px',
     paddingRight: '30px',
+
+    '&:hover': {
+      backgroundColor: 'transparent',
+    },
   },
 }))
 
-export default function AppBar() {
+const AppBar = ({ user }) => {
+  const { user: userProfile } = user
+
   const classes = useStyles()
   const { root, appBar, mainMenu, mobileMenu } = classes
 
@@ -101,8 +114,14 @@ export default function AppBar() {
             <ButtonLink classes={buttonLinkClasses} label="Latest Sightings" linkTo="/sightings" />
             <ButtonLink classes={buttonLinkClasses} label="Favorites" linkTo="/favorites" />
 
-            <SigninButton />
-            <SignupButton />
+            {userProfile ? (
+              <ProfileButton />
+            ) : (
+              <Fragment>
+                <SigninButton />
+                <SignupButton />
+              </Fragment>
+            )}
           </div>
 
           <IconButton edge="start" className={mobileMenu} aria-label="menu">
@@ -113,3 +132,11 @@ export default function AppBar() {
     </div>
   )
 }
+
+const redux = [
+  ({ user }) => ({
+    user,
+  }),
+]
+
+export default connect(...redux)(AppBar)

@@ -5,6 +5,8 @@ import Dialog from '@material-ui/core/Dialog'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Alert from '@material-ui/lab/Alert'
+import IconButton from '@material-ui/core/IconButton'
+import CloseIcon from '@material-ui/icons/Close'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
 import { useTheme } from '@material-ui/core/styles'
 import { makeStyles } from '@material-ui/core/styles'
@@ -18,6 +20,8 @@ import { signupUser, userInfo } from '../../reducers/User'
 import { formatAPIError } from '../../utils/Error'
 import { withDelay } from '../../utils/Delay'
 
+const DIALOG_WIDTH = 380
+
 const useStyles = makeStyles(theme => ({
   fabButton: {
     textTransform: 'none',
@@ -25,14 +29,34 @@ const useStyles = makeStyles(theme => ({
     paddingRight: '1.5rem !important',
     boxShadow: 'none',
   },
+  dialogClose: {
+    display: 'none',
+    width: 50,
+    position: 'absolute',
+    top: 7,
+    right: 25,
+    color: theme.palette.gray.main,
+
+    '&.fullScreen': {
+      display: 'block',
+    },
+  },
   dialogTitle: {
-    width: 380,
+    width: DIALOG_WIDTH,
     textAlign: 'center',
     fontSize: 20,
+
+    '&.fullScreen': {
+      width: '100%',
+    },
   },
   dialogContent: {
-    width: 380,
+    width: DIALOG_WIDTH,
     padding: '0 30px 30px',
+
+    '&.fullScreen': {
+      width: '100%',
+    },
   },
   alert: {
     marginBottom: 30,
@@ -51,7 +75,11 @@ const SignupButton = ({ dispatch, user }) => {
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'))
 
   const classes = useStyles()
-  const { fabButton, dialog, dialogTitle, dialogContent, alert } = classes
+  const { fabButton, dialog, dialogClose, dialogTitle, dialogContent, alert } = classes
+
+  const dialogCloseClassName = `${dialogClose} ${fullScreen ? 'fullScreen' : ''}`
+  const dialogTitleClassName = `${dialogTitle} ${fullScreen ? 'fullScreen' : ''}`
+  const dialogContentClassName = `${dialogContent} ${fullScreen ? 'fullScreen' : ''}`
 
   const handleClickOpen = () => setIsOpen(true)
   const handleClose = () => setIsOpen(false)
@@ -59,7 +87,8 @@ const SignupButton = ({ dispatch, user }) => {
   const handleRegister = () => {
     dispatch(userInfo())
       .then(() => {
-        setIsOpen(false)
+        // Cannot close because the component is conditional on !!user.user in AppBar
+        // setIsOpen(false)
         history.push('/user')
       })
       .catch(error => {
@@ -101,7 +130,17 @@ const SignupButton = ({ dispatch, user }) => {
         onClose={handleClose}
         aria-labelledby="responsive-dialog-title"
       >
-        <DialogTitle id="responsive-dialog-title" className={dialogTitle}>
+        <IconButton
+          className={dialogCloseClassName}
+          edge="start"
+          color="inherit"
+          onClick={handleClose}
+          aria-label="close"
+        >
+          <CloseIcon />
+        </IconButton>
+
+        <DialogTitle id="responsive-dialog-title" className={dialogTitleClassName}>
           {'Create an Account'}
         </DialogTitle>
 
@@ -111,8 +150,8 @@ const SignupButton = ({ dispatch, user }) => {
           </Alert>
         )}
 
-        <DialogContent className={dialogContent}>
-          <SignupForm onSubmit={handleSubmit} didSuceed={didRegister} />
+        <DialogContent className={dialogContentClassName}>
+          <SignupForm onSubmit={handleSubmit} didSucceed={didRegister} />
         </DialogContent>
       </Dialog>
     </Fragment>
