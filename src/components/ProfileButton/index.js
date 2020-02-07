@@ -59,6 +59,10 @@ const useStyles = makeStyles(theme => ({
     '&.fullScreen': {
       width: '100%',
     },
+
+    [theme.breakpoints.down('xs')]: {
+      padding: `0 30px 30px`,
+    },
   },
   dialogWrapper: {
     display: 'flex',
@@ -82,13 +86,19 @@ const useStyles = makeStyles(theme => ({
     '&.fullScreen': {
       width: '100%',
     },
+
+    [theme.breakpoints.down('xs')]: {
+      padding: `0 30px 30px`,
+    },
   },
   alert: {
     marginBottom: 30,
   },
 }))
 
-const ProfileButton = ({ dispatch, user }) => {
+const ProfileButton = ({ dispatch, user, onOpen: maybeOnOpen, DialogHeader = () => null }) => {
+  const onOpen = maybeOnOpen ? maybeOnOpen : () => {}
+
   const { error, user: userProfile, sightings } = user
   const { first_name, last_name } = userProfile
   const { sightings: sightingsList } = sightings
@@ -125,8 +135,14 @@ const ProfileButton = ({ dispatch, user }) => {
   const dialogTitleClassName = `${dialogTitleWrapper} ${fullScreen ? 'fullScreen' : ''}`
   const dialogContentClassName = `${dialogContent} ${fullScreen ? 'fullScreen' : ''}`
 
-  const handleClickOpen = () => setIsOpen(true)
-  const handleClose = () => setIsOpen(false)
+  const handleClickOpen = () => {
+    onOpen(true)
+    setIsOpen(true)
+  }
+  const handleClose = () => {
+    onOpen(false)
+    setIsOpen(false)
+  }
 
   const handleSubmitUpdate = (values, { setSubmitting }) => {
     setDidUpdate(false)
@@ -155,7 +171,7 @@ const ProfileButton = ({ dispatch, user }) => {
     withDelay({
       delay: 600,
       func: () => {
-        setIsOpen(false)
+        handleClose()
         history.push('/')
       },
     })
@@ -192,6 +208,9 @@ const ProfileButton = ({ dispatch, user }) => {
         >
           <CloseIcon />
         </IconButton>
+
+        <DialogHeader />
+
         <DialogTitle id="responsive-dialog-title" className={dialogTitleClassName}>
           <Grid container spacing={3}>
             <Grid item>

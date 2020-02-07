@@ -1,10 +1,16 @@
-import React, { Fragment } from 'react'
+import React, { Fragment, useState } from 'react'
 import { connect } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles'
 import MuiAppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import IconButton from '@material-ui/core/IconButton'
 import MenuIcon from '@material-ui/icons/Menu'
+import Dialog from '@material-ui/core/Dialog'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogTitle from '@material-ui/core/DialogTitle'
+import CloseIcon from '@material-ui/icons/Close'
+import { useTheme } from '@material-ui/core/styles'
+import useMediaQuery from '@material-ui/core/useMediaQuery'
 
 import IconLogo from '../IconLogo'
 import ButtonLink from '../ButtonLink'
@@ -12,6 +18,8 @@ import ButtonLink from '../ButtonLink'
 import SigninButton from '../SigninButton'
 import SignupButton from '../SignupButton'
 import ProfileButton from '../ProfileButton'
+
+import { withDelay } from '../../utils/Delay'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -21,16 +29,8 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: theme.palette.light.main,
     boxShadow: 'none',
   },
-  mainMenu: {
-    display: 'none',
-    [theme.breakpoints.up('sm')]: {
-      display: 'block',
-    },
-  },
-  mobileMenu: {
-    [theme.breakpoints.up('sm')]: {
-      display: 'none',
-    },
+  dialogHeader: {
+    backgroundColor: theme.palette.light.main,
   },
   fablink: {
     color: theme.palette.light.main,
@@ -76,57 +76,217 @@ const buttonLinkStyles = makeStyles(theme => ({
   button: {
     color: theme.palette.gray.main,
     textTransform: 'none',
-    paddingLeft: '30px',
-    paddingRight: '30px',
+    paddingLeft: 30,
+    paddingRight: 30,
 
     '&:hover': {
       backgroundColor: 'transparent',
     },
+
+    [theme.breakpoints.down('xs')]: {
+      paddingLeft: 0,
+      paddingRight: 0,
+      marginBottom: 10,
+      justifyContent: 'flex-start',
+    },
   },
 }))
 
-const AppBar = ({ user }) => {
+const dialogStyles = makeStyles(theme => ({
+  dialogClose: {
+    width: 50,
+    position: 'absolute',
+    top: 5,
+    right: 15,
+    color: theme.palette.gray.main,
+  },
+  dialogTitle: {
+    padding: '5px 17px 20px',
+  },
+  dialogContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    padding: '0 20',
+
+    '& > button.MuiButton-root': {
+      paddingLeft: '0 !important',
+
+      '& > span.MuiButton-label': {
+        justifyContent: 'flex-start',
+      },
+    },
+  },
+}))
+
+const Brand = ({ onClick = () => {} }) => {
+  const brandLinkClasses = brandLinkStyles()
+
+  return (
+    <ButtonLink
+      classes={brandLinkClasses}
+      label="FlowrSpot"
+      icon={props => (
+        <IconButton edge="start" color="inherit" {...props}>
+          <IconLogo />
+        </IconButton>
+      )}
+      linkTo="/"
+      onClick={onClick}
+    />
+  )
+}
+
+const DialogHeader = ({ user, onClick, onClickDialogHeader }) => {
+  const classes = useStyles()
+  const { dialogHeader } = classes
+
+  return (
+    <MuiAppBar position="static" className={dialogHeader}>
+      <Toolbar>
+        <Brand onClick={() => onClickDialogHeader({ justClose: true })} />
+
+        <IconButton edge="start" aria-label="menu" onClick={onClickDialogHeader}>
+          <MenuIcon />
+        </IconButton>
+      </Toolbar>
+    </MuiAppBar>
+  )
+}
+
+const MainMenuItems = ({ user, onClick, onClickDialogHeader }) => {
   const { user: userProfile } = user
 
-  const classes = useStyles()
-  const { root, appBar, mainMenu, mobileMenu } = classes
-
-  const brandLinkClasses = brandLinkStyles()
   const buttonLinkClasses = buttonLinkStyles()
+
+  const handleOpen = isOpen => {
+    if (!isOpen) {
+      onClick()
+    }
+  }
+
+  const theme = useTheme()
+  const isFullscreen = useMediaQuery(theme.breakpoints.down('xs'))
+
+  const Header = () => (isFullscreen ? DialogHeader({ user, onClick, onClickDialogHeader }) : null)
+  const onOpen = isFullscreen ? handleOpen : null
+
+  return (
+    <Fragment>
+      <ButtonLink classes={buttonLinkClasses} label="Flowers" linkTo="/flowers" onClick={onClick} />
+      <ButtonLink
+        classes={buttonLinkClasses}
+        label="Latest Sightings"
+        linkTo="/sightings"
+        onClick={onClick}
+      />
+      <ButtonLink
+        classes={buttonLinkClasses}
+        label="Favorites"
+        linkTo="/favorites"
+        onClick={onClick}
+      />
+
+      {userProfile ? (
+        <ProfileButton onOpen={onOpen} DialogHeader={Header} />
+      ) : (
+        <Fragment>
+          <SigninButton onOpen={onOpen} DialogHeader={Header} />
+          <br />
+          <SignupButton onOpen={onOpen} DialogHeader={Header} />
+        </Fragment>
+      )}
+    </Fragment>
+  )
+}
+
+const MainMenuDialog = ({ isOpen, onClose, children }) => {
+  const dialogClasses = dialogStyles()
+  const { dialog, dialogClose, dialogTitle, dialogContent } = dialogClasses
+
+  return (
+    <Dialog
+      className={dialog}
+      fullScreen={true}
+      maxWidth="sm"
+      open={isOpen}
+      onClose={onClose}
+      aria-labelledby="responsive-dialog-title"
+    >
+      <IconButton
+        className={dialogClose}
+        edge="start"
+        color="inherit"
+        onClick={onClose}
+        aria-label="close"
+      >
+        <CloseIcon />
+      </IconButton>
+
+      <DialogTitle id="responsive-dialog-title" className={dialogTitle}>
+        <Brand onClick={onClose} />
+      </DialogTitle>
+
+      <DialogContent className={dialogContent}>{children}</DialogContent>
+    </Dialog>
+  )
+}
+
+const MainMenu = ({ user, isFullscreen, isDialogOpen, onCloseDialog, onClickDialogHeader }) =>
+  isFullscreen ? (
+    <MainMenuDialog isOpen={isDialogOpen} onClose={onCloseDialog}>
+      <MainMenuItems
+        user={user}
+        onClick={onCloseDialog}
+        onClickDialogHeader={onClickDialogHeader}
+      />
+    </MainMenuDialog>
+  ) : (
+    <MainMenuItems user={user} />
+  )
+
+const AppBar = ({ user }) => {
+  const classes = useStyles()
+  const { root, appBar } = classes
+
+  const theme = useTheme()
+  const isFullscreen = useMediaQuery(theme.breakpoints.down('xs'))
+
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+
+  const handleClickOpen = () => setIsDialogOpen(true)
+  const handleClickClose = () => setIsDialogOpen(false)
+
+  // Closes all dialogs and optionally opens the menu dialog again
+  const handleClickDialogHeader = ({ justClose }) => {
+    handleClickClose()
+
+    if (justClose) {
+      return
+    }
+
+    withDelay({ delay: 300, func: handleClickOpen })
+  }
 
   return (
     <div className={root}>
       <MuiAppBar position="static" className={appBar}>
         <Toolbar>
-          <ButtonLink
-            classes={brandLinkClasses}
-            label="FlowrSpot"
-            icon={props => (
-              <IconButton edge="start" color="inherit" {...props}>
-                <IconLogo />
-              </IconButton>
-            )}
-            linkTo="/"
+          <Brand />
+
+          <MainMenu
+            user={user}
+            isFullscreen={isFullscreen}
+            isDialogOpen={isDialogOpen}
+            onCloseDialog={handleClickClose}
+            onClickDialogHeader={handleClickDialogHeader}
           />
 
-          <div className={mainMenu}>
-            <ButtonLink classes={buttonLinkClasses} label="Flowers" linkTo="/flowers" />
-            <ButtonLink classes={buttonLinkClasses} label="Latest Sightings" linkTo="/sightings" />
-            <ButtonLink classes={buttonLinkClasses} label="Favorites" linkTo="/favorites" />
-
-            {userProfile ? (
-              <ProfileButton />
-            ) : (
-              <Fragment>
-                <SigninButton />
-                <SignupButton />
-              </Fragment>
-            )}
-          </div>
-
-          <IconButton edge="start" className={mobileMenu} aria-label="menu">
-            <MenuIcon />
-          </IconButton>
+          {isFullscreen && (
+            <IconButton edge="start" aria-label="menu" onClick={handleClickOpen}>
+              <MenuIcon />
+            </IconButton>
+          )}
         </Toolbar>
       </MuiAppBar>
     </div>

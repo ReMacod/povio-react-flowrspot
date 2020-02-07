@@ -7,6 +7,7 @@ import Divider from '@material-ui/core/Divider'
 import IconButton from '@material-ui/core/IconButton'
 import SearchIcon from '@material-ui/icons/Search'
 import CloseIcon from '@material-ui/icons/Close'
+import useMediaQuery from '@material-ui/core/useMediaQuery'
 
 import { debounce } from 'throttle-debounce'
 
@@ -23,6 +24,9 @@ const useStyles = makeStyles(theme => ({
     alignItems: 'center',
     width: 450,
     marginTop: '2rem',
+  },
+  below600: {
+    width: 'auto',
   },
   input: {
     marginLeft: theme.spacing(2),
@@ -43,7 +47,10 @@ const useStyles = makeStyles(theme => ({
 
 export default function FlowerSearch({ onSearch }) {
   const classes = useStyles()
-  const { root, input, searchIconButton, clearIconButton, divider } = classes
+  const { root, below600, input, searchIconButton, clearIconButton, divider } = classes
+
+  const isWidthBelow600 = useMediaQuery('(max-width:600px)')
+  const rootClassName = `${root} ${isWidthBelow600 ? below600 : ''}`
 
   const [query, setQuery] = useState('')
 
@@ -68,7 +75,7 @@ export default function FlowerSearch({ onSearch }) {
 
   return (
     <div className={className}>
-      <Paper component="form" className={root} onSubmit={handleSubmit}>
+      <Paper component="form" className={rootClassName} onSubmit={handleSubmit}>
         <InputBase
           className={input}
           placeholder="Looking for something specific?"

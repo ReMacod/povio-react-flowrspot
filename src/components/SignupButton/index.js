@@ -61,7 +61,9 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const SignupButton = ({ dispatch, user }) => {
+const SignupButton = ({ dispatch, user, onOpen: maybeOnOpen, DialogHeader = () => null }) => {
+  const onOpen = maybeOnOpen ? maybeOnOpen : () => {}
+
   const { error } = user
 
   const [isOpen, setIsOpen] = useState(false)
@@ -77,14 +79,20 @@ const SignupButton = ({ dispatch, user }) => {
   const dialogTitleClassName = `${dialogTitle} ${fullScreen ? 'fullScreen' : ''}`
   const dialogContentClassName = `${dialogContent} ${fullScreen ? 'fullScreen' : ''}`
 
-  const handleClickOpen = () => setIsOpen(true)
-  const handleClose = () => setIsOpen(false)
+  const handleClickOpen = () => {
+    onOpen(true)
+    setIsOpen(true)
+  }
+  const handleClose = () => {
+    onOpen(false)
+    setIsOpen(false)
+  }
 
   const handleRegister = () => {
     dispatch(userInfo())
       .then(() => {
         // Cannot close because the component is conditional on !!user.user in AppBar
-        // setIsOpen(false)
+        // handleClose()
       })
       .catch(error => {
         console.log('SignupButton handleRegister error', error)
@@ -134,6 +142,8 @@ const SignupButton = ({ dispatch, user }) => {
         >
           <CloseIcon />
         </IconButton>
+
+        <DialogHeader />
 
         <DialogTitle id="responsive-dialog-title" className={dialogTitleClassName}>
           {'Create an Account'}

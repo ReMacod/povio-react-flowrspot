@@ -21,6 +21,11 @@ import { withDelay } from '../../utils/Delay'
 const DIALOG_WIDTH = 380
 
 const useStyles = makeStyles(theme => ({
+  dialog: {
+    '& MuiDialog-root': {
+      top: 56,
+    },
+  },
   button: {
     color: theme.palette.primary.main,
     textTransform: 'none',
@@ -48,6 +53,7 @@ const useStyles = makeStyles(theme => ({
     width: DIALOG_WIDTH,
     textAlign: 'center',
     fontSize: 20,
+    fontWeight: 500,
 
     '&.fullScreen': {
       width: '100%',
@@ -66,7 +72,9 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const SigninButton = ({ dispatch, user }) => {
+const SigninButton = ({ dispatch, user, onOpen: maybeOnOpen, DialogHeader = () => null }) => {
+  const onOpen = maybeOnOpen ? maybeOnOpen : () => {}
+
   const { error } = user
 
   const [isOpen, setIsOpen] = useState(false)
@@ -82,8 +90,14 @@ const SigninButton = ({ dispatch, user }) => {
   const dialogTitleClassName = `${dialogTitle} ${fullScreen ? 'fullScreen' : ''}`
   const dialogContentClassName = `${dialogContent} ${fullScreen ? 'fullScreen' : ''}`
 
-  const handleClickOpen = () => setIsOpen(true)
-  const handleClose = () => setIsOpen(false)
+  const handleClickOpen = () => {
+    onOpen(true)
+    setIsOpen(true)
+  }
+  const handleClose = () => {
+    onOpen(false)
+    setIsOpen(false)
+  }
 
   const handleUserInfoSuccess = () => {
     dispatch(userSightings())
@@ -96,8 +110,7 @@ const SigninButton = ({ dispatch, user }) => {
   const handleSigninSuccess = () => {
     dispatch(userInfo())
       .then(() => {
-        setIsOpen(false)
-
+        handleClose()
         handleUserInfoSuccess()
       })
       .catch(error => {
@@ -113,7 +126,7 @@ const SigninButton = ({ dispatch, user }) => {
         setSubmitting(false)
         setDidLogin(true)
 
-        withDelay({ func: () => handleSigninSuccess({ setSubmitting }) })
+        withDelay({ delay: 300, func: () => handleSigninSuccess({ setSubmitting }) })
       })
       .catch(error => setSubmitting(false))
   }
@@ -132,6 +145,8 @@ const SigninButton = ({ dispatch, user }) => {
         onClose={handleClose}
         aria-labelledby="responsive-dialog-title"
       >
+        <DialogHeader />
+
         <IconButton
           className={dialogCloseClassName}
           edge="start"
