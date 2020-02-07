@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 import { optionsGet } from '../../api/fetch'
-import { flowers, flowersSearch } from '../../api/endpoints'
+import { flowersList, flowersSearch } from '../../api/endpoints'
 
 import { fetchActions, checkIsFetching, handleFetch, delayLoadingEnd } from '../fetch'
 
@@ -25,14 +25,14 @@ const initialState = {
     //   favorite: true,
     // },
   ],
-  meta: {
-    pagination: {
-      current_page: 0,
-      prev_page: 0,
-      next_page: 0,
-      total_pages: 0,
-    },
-  },
+  // meta: {
+  //   pagination: {
+  //     current_page: 0,
+  //     prev_page: 0,
+  //     next_page: 0,
+  //     total_pages: 0,
+  //   },
+  // },
 }
 
 /* LIST */
@@ -75,7 +75,7 @@ const searchFlowersFailed = (state, action) => ({
 
 const SLICE_NAME = 'flowers'
 
-const flowersSlice = createSlice({
+const slice = createSlice({
   name: SLICE_NAME,
   initialState,
   reducers: {
@@ -88,7 +88,7 @@ const flowersSlice = createSlice({
   },
 })
 
-export const { reducer, actions } = flowersSlice
+export const { reducer, actions } = slice
 
 /* THUNKS */
 
@@ -103,7 +103,7 @@ export const listFlowers = ({ page = 0 } = {}) => (dispatch, getState) =>
     dispatch(onStart())
     dispatch(loadingStart())
 
-    const request = () => fetch(flowers, optionsGet)
+    const request = () => fetch(flowersList, optionsGet)
 
     const onFulfill = result => {
       delayLoadingEnd({ dispatch, loadingEnding, loadingEnd })

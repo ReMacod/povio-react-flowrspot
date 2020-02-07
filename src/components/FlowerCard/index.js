@@ -56,7 +56,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-export default function FlowerCard({ flower }) {
+export default function FlowerCard({ flower, isLoggedIn }) {
   const classes = useStyles()
   const {
     root,
@@ -77,10 +77,12 @@ export default function FlowerCard({ flower }) {
     <Card className={root} style={{ background }}>
       <CardContent className={content}>
         <Typography className={title}>{name}</Typography>
+
         <Typography className={subtitle} gutterBottom>
           {latin_name}
         </Typography>
       </CardContent>
+
       <CardActions className={actions}>
         <Fab
           variant="extended"
@@ -91,15 +93,18 @@ export default function FlowerCard({ flower }) {
         >
           {sightings} sightings
         </Fab>
-        <Fab
-          variant="extended"
-          size="small"
-          color="primary"
-          aria-label="add"
-          className={favoriteButton}
-        >
-          <StarIcon className={favoriteIcon} />
-        </Fab>
+
+        {isLoggedIn && (
+          <Fab
+            variant="extended"
+            size="small"
+            color="primary"
+            aria-label="add"
+            className={favoriteButton}
+          >
+            <StarIcon className={favoriteIcon} />
+          </Fab>
+        )}
       </CardActions>
     </Card>
   )

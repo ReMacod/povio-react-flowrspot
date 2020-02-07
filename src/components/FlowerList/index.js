@@ -20,7 +20,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const FlowerList = ({ flowers }) => {
+const FlowerList = ({ flowers, isLoggedIn }) => {
   const classes = useStyles()
 
   return (
@@ -28,7 +28,7 @@ const FlowerList = ({ flowers }) => {
       <Grid container spacing={3}>
         {flowers.map(flower => (
           <Grid item key={flower.id} xs={6} sm={3} md={2} lg={2} xl={1}>
-            <FlowerCard className={classes.paper} flower={flower} />
+            <FlowerCard className={classes.paper} flower={flower} isLoggedIn={isLoggedIn} />
           </Grid>
         ))}
       </Grid>

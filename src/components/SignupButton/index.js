@@ -11,8 +11,6 @@ import useMediaQuery from '@material-ui/core/useMediaQuery'
 import { useTheme } from '@material-ui/core/styles'
 import { makeStyles } from '@material-ui/core/styles'
 
-import { useHistory } from 'react-router-dom'
-
 import SignupForm from '../SignupForm'
 
 import { signupUser, userInfo } from '../../reducers/User'
@@ -69,8 +67,6 @@ const SignupButton = ({ dispatch, user }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [didRegister, setDidRegister] = useState(false)
 
-  const history = useHistory()
-
   const theme = useTheme()
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'))
 
@@ -89,7 +85,6 @@ const SignupButton = ({ dispatch, user }) => {
       .then(() => {
         // Cannot close because the component is conditional on !!user.user in AppBar
         // setIsOpen(false)
-        history.push('/user')
       })
       .catch(error => {
         console.log('SignupButton handleRegister error', error)

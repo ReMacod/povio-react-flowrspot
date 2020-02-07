@@ -21,11 +21,13 @@ import PageFooter from './page/Footer'
 import store from './reducers/store'
 import { reducer as loading } from './reducers/Loading'
 import { reducer as flowers } from './reducers/Flowers'
+import { reducer as sightings } from './reducers/Sightings'
 import { reducer as user } from './reducers/User'
 
 const state = {
   loading,
   flowers,
+  sightings,
   user,
 }
 
@@ -35,7 +37,6 @@ const routes = () => (
     <Route path="/flowers" exact component={Flowers} />
     <Route path="/sightings" exact component={Sightings} />
     <Route path="/favorites" exact component={Favorites} />
-    {/* TODO: style 404 page */}
     <Route path="*" component={NotFound} />
   </Switch>
 )

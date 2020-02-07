@@ -32,6 +32,7 @@ const useStyles = makeStyles(theme => ({
   },
   submitButton: {
     marginTop: 10,
+    marginRight: 10,
     height: 50,
     width: 150,
     textTransform: 'none',
@@ -62,7 +63,13 @@ const SignupSchema = yup.object().shape({
 const mockDateOfBirth = 'May 20, 1980'
 const mockEmail = 'michael.berry@gmail.com'
 
-export default function SignupForm({ user = {}, onSubmit, didSucceed }) {
+export default function ProfileForm({
+  user = {},
+  onSubmitUpdate,
+  onSubmitLogout,
+  didUpdate,
+  didLogout,
+}) {
   const classes = useStyles()
   const {
     root,
@@ -73,8 +80,8 @@ export default function SignupForm({ user = {}, onSubmit, didSucceed }) {
     submitButtonProgress,
   } = classes
 
-  const withSuccess = didSucceed ? submitButtonSuccess : ''
-  const submitButtonClassName = `${submitButton} ${withSuccess}`
+  const withUpdateSuccess = didUpdate ? submitButtonSuccess : ''
+  const updateButtonClassName = `${submitButton} ${withUpdateSuccess}`
 
   const {
     first_name = '',
@@ -93,7 +100,7 @@ export default function SignupForm({ user = {}, onSubmit, didSucceed }) {
         email,
       }}
       validationSchema={SignupSchema}
-      onSubmit={onSubmit}
+      onSubmit={onSubmitUpdate}
     >
       {({ submitForm, isSubmitting, errors, touched }) => (
         <Form className={form}>
@@ -104,14 +111,24 @@ export default function SignupForm({ user = {}, onSubmit, didSucceed }) {
 
           <div className={submitButtonWrapper}>
             <Button
-              className={submitButtonClassName}
+              className={updateButtonClassName}
               variant="contained"
               size="large"
               color="primary"
               disabled={isSubmitting || isFormError({ errors, touched })}
               onClick={submitForm}
             >
-              {didSucceed ? 'Logged out!' : 'Logout'}
+              {didUpdate ? 'Profile Updated!' : 'Update Profile'}
+            </Button>
+
+            <Button
+              className={submitButton}
+              size="large"
+              color="primary"
+              disabled={isSubmitting || isFormError({ errors, touched })}
+              onClick={onSubmitLogout}
+            >
+              {didLogout ? 'Logged out!' : 'Logout'}
             </Button>
 
             {isSubmitting && <CircularProgress size={24} className={submitButtonProgress} />}

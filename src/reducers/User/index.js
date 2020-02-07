@@ -2,7 +2,12 @@ import { createSlice } from '@reduxjs/toolkit'
 
 import { optionsGet, optionsPost, optionsPut } from '../../api/fetch'
 
-import { usersRegister as userSignup, usersLogin as userSignin, usersMe } from '../../api/endpoints'
+import {
+  usersRegister as userSignup,
+  usersLogin as userSignin,
+  usersMe,
+  userSightings as userSightingsUrl,
+} from '../../api/endpoints'
 
 import { checkIsFetching, fetchActions, handleFetch } from '../fetch'
 
@@ -22,9 +27,33 @@ const initialUserState = {
   // },
 }
 
+const initialUserSightingsState = {
+  sightings: [
+    //   {
+    //     id: 0,
+    //     flower_id: 0,
+    //     name: 'string',
+    //     description: 'string',
+    //     latitude: 0,
+    //     longitude: 0,
+    //   },
+  ],
+  // meta: {
+  //   pagination: {
+  //     current_page: 0,
+  //     prev_page: 0,
+  //     next_page: 0,
+  //     total_pages: 0,
+  //   }
+  // },
+}
+
 const initialState = {
   ...initialFetchingState,
   ...initialUserState,
+  sightings: {
+    ...initialUserSightingsState,
+  },
 }
 
 /* USER INFO */
@@ -99,11 +128,29 @@ const logoutUserFailed = (state, action) => ({
   error: action.payload.error,
 })
 
+/* USER SIGHTINGS */
+
+const userSightingsStart = (state, action) => ({
+  ...state,
+  ...initialFetchingState,
+  isFetching: true,
+})
+const userSightingsSuccess = (state, action) => ({
+  ...state,
+  ...initialFetchingState,
+  sightings: action.payload,
+})
+const userSightingsFailed = (state, action) => ({
+  ...state,
+  ...initialFetchingState,
+  error: action.payload.error,
+})
+
 /* SLICE */
 
 const SLICE_NAME = 'user'
 
-const userSlice = createSlice({
+const slice = createSlice({
   name: SLICE_NAME,
   initialState,
   reducers: {
@@ -127,10 +174,14 @@ const userSlice = createSlice({
     logoutUserStart,
     logoutUserSuccess,
     logoutUserFailed,
+    // userSightings
+    userSightingsStart,
+    userSightingsSuccess,
+    userSightingsFailed,
   },
 })
 
-export const { reducer, actions } = userSlice
+export const { reducer, actions } = slice
 
 /* THUNKS */
 
@@ -201,7 +252,13 @@ export const updateUser = ({ body } = {}) => (dispatch, getState) =>
 
     dispatch(onStart())
 
-    const options = { ...optionsPut, body: JSON.stringify(body) }
+    const state = getState()
+    const { auth_token } = state.user
+    const options = {
+      ...optionsPut,
+      headers: { ...optionsPut.headers, Authorization: `Bearer ${auth_token}` },
+      body: JSON.stringify(body),
+    }
     const request = () => fetch(usersMe, options)
 
     handleFetch({ dispatch, request, fulfill, reject, onSuccess, onFailed })
@@ -222,6 +279,32 @@ export const logoutUser = ({ body } = {}) => (dispatch, getState) =>
     // const request = () => fetch(usersLogout, options)
     const mockResponse = new Response(JSON.stringify({ auth_token: null }), { status: 200 })
     const request = () => mockResponse
+
+    handleFetch({ dispatch, request, fulfill, reject, onSuccess, onFailed })
+  })
+
+export const userSightings = () => (dispatch, getState) =>
+  new Promise((fulfill, reject) => {
+    if (checkIsFetching({ getState, SLICE_NAME, reject, error: 'Already getting user info' })) {
+      return
+    }
+
+    const { onStart, onSuccess, onFailed } = fetchActions({ actions, THUNK_NAME: 'userSightings' })
+
+    dispatch(onStart())
+
+    const state = getState()
+    const { auth_token, user } = state.user
+    const { id } = user
+
+    const options = {
+      ...optionsGet,
+      /* prettier-ignore */
+      headers: { ...optionsGet.headers, 'Authorization': `Bearer ${auth_token}` }
+    }
+
+    const endpoint = userSightingsUrl({ id })
+    const request = () => fetch(endpoint, options)
 
     handleFetch({ dispatch, request, fulfill, reject, onSuccess, onFailed })
   })

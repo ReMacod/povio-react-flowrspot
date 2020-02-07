@@ -11,11 +11,9 @@ import useMediaQuery from '@material-ui/core/useMediaQuery'
 import { useTheme } from '@material-ui/core/styles'
 import { makeStyles } from '@material-ui/core/styles'
 
-import { useHistory } from 'react-router-dom'
-
 import SigninForm from '../SigninForm'
 
-import { signinUser, userInfo } from '../../reducers/User'
+import { signinUser, userInfo, userSightings } from '../../reducers/User'
 
 import { formatAPIError } from '../../utils/Error'
 import { withDelay } from '../../utils/Delay'
@@ -74,8 +72,6 @@ const SigninButton = ({ dispatch, user }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [didLogin, setDidLogin] = useState(false)
 
-  const history = useHistory()
-
   const theme = useTheme()
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'))
 
@@ -89,11 +85,20 @@ const SigninButton = ({ dispatch, user }) => {
   const handleClickOpen = () => setIsOpen(true)
   const handleClose = () => setIsOpen(false)
 
-  const handleLogin = () => {
+  const handleUserInfoSuccess = () => {
+    dispatch(userSightings())
+      .then(() => {})
+      .catch(error => {
+        console.log('SigninButton handleLogin error', error)
+      })
+  }
+
+  const handleSigninSuccess = () => {
     dispatch(userInfo())
       .then(() => {
         setIsOpen(false)
-        history.push('/user')
+
+        handleUserInfoSuccess()
       })
       .catch(error => {
         console.log('SigninButton handleLogin error', error)
@@ -108,7 +113,7 @@ const SigninButton = ({ dispatch, user }) => {
         setSubmitting(false)
         setDidLogin(true)
 
-        withDelay({ func: () => handleLogin({ setSubmitting }) })
+        withDelay({ func: () => handleSigninSuccess({ setSubmitting }) })
       })
       .catch(error => setSubmitting(false))
   }

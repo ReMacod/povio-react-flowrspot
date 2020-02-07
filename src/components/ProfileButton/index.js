@@ -16,7 +16,7 @@ import { useHistory } from 'react-router-dom'
 
 import ProfileForm from '../ProfileForm'
 
-import { logoutUser } from '../../reducers/User'
+import { updateUser, logoutUser } from '../../reducers/User'
 
 import { formatAPIError } from '../../utils/Error'
 import { withDelay } from '../../utils/Delay'
@@ -89,12 +89,19 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const ProfileButton = ({ dispatch, user }) => {
-  const { error, user: userProfile } = user
+  const { error, user: userProfile, sightings } = user
   const { first_name, last_name } = userProfile
+  const { sightings: sightingsList } = sightings
 
   const fullName = `${first_name} ${last_name}`
 
+  const numOfSightings = sightingsList.length
+  const isSightingsPlural = numOfSightings === 0 || numOfSightings > 1
+  const sightingsString = `sighting${isSightingsPlural ? 's' : ''}`
+  const numOfSightingsFormatted = `${numOfSightings} ${sightingsString}`
+
   const [isOpen, setIsOpen] = useState(false)
+  const [didUpdate, setDidUpdate] = useState(false)
   const [didLogout, setDidLogout] = useState(false)
 
   const history = useHistory()
@@ -121,14 +128,26 @@ const ProfileButton = ({ dispatch, user }) => {
   const handleClickOpen = () => setIsOpen(true)
   const handleClose = () => setIsOpen(false)
 
+  const handleSubmitUpdate = (values, { setSubmitting }) => {
+    setDidUpdate(false)
+
+    dispatch(updateUser({ body: values }))
+      .then(() => {
+        setSubmitting(false)
+        setDidUpdate(true)
+
+        withDelay({ func: () => setDidUpdate(false) })
+      })
+      .catch(error => setSubmitting(false))
+  }
+
   // Optimistic logout
-  const handleSubmit = (values, { setSubmitting }) => {
+  const handleSubmitLogout = () => {
     setDidLogout(false)
 
     withDelay({
       delay: 300,
       func: () => {
-        setSubmitting(false)
         setDidLogout(true)
       },
     })
@@ -144,9 +163,9 @@ const ProfileButton = ({ dispatch, user }) => {
     withDelay({
       delay: 700,
       func: () =>
-        dispatch(logoutUser())
-          .then(() => {})
-          .catch(error => setSubmitting(false)),
+        dispatch(logoutUser()).catch(error => {
+          console.log('handleSubmitLogout error', error)
+        }),
     })
   }
 
@@ -181,7 +200,7 @@ const ProfileButton = ({ dispatch, user }) => {
 
             <Grid item className={dialogWrapper}>
               <h2 className={dialogTitle}>{fullName}</h2>
-              <p className={dialogSubtitle}>47 sightings</p>
+              <p className={dialogSubtitle}>{numOfSightingsFormatted}</p>
             </Grid>
           </Grid>
         </DialogTitle>
@@ -193,7 +212,13 @@ const ProfileButton = ({ dispatch, user }) => {
         )}
 
         <DialogContent className={dialogContentClassName}>
-          <ProfileForm user={userProfile} onSubmit={handleSubmit} didSucceed={didLogout} />
+          <ProfileForm
+            user={userProfile}
+            onSubmitUpdate={handleSubmitUpdate}
+            onSubmitLogout={handleSubmitLogout}
+            didUpdate={didUpdate}
+            didLogout={didLogout}
+          />
         </DialogContent>
       </Dialog>
     </Fragment>
