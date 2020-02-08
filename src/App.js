@@ -19,6 +19,7 @@ import PageMain from './page/Main'
 import PageFooter from './page/Footer'
 
 import store from './reducers/store'
+import { reducer as dialogs } from './reducers/Dialogs'
 import { reducer as loading } from './reducers/Loading'
 import { reducer as messages } from './reducers/Messages'
 import { reducer as flowers } from './reducers/Flowers'
@@ -26,6 +27,7 @@ import { reducer as sightings } from './reducers/Sightings'
 import { reducer as user } from './reducers/User'
 
 const state = {
+  dialogs,
   loading,
   messages,
   flowers,

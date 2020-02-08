@@ -1,85 +1,39 @@
 import React, { useState, useEffect, useCallback, Fragment } from 'react'
 import { connect } from 'react-redux'
-import Button from '@material-ui/core/Button'
+import Fab from '@material-ui/core/Fab'
 import Dialog from '@material-ui/core/Dialog'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Alert from '@material-ui/lab/Alert'
+import Grid from '@material-ui/core/Grid'
+import Collapse from '@material-ui/core/Collapse'
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
-import Collapse from '@material-ui/core/Collapse'
-import Grid from '@material-ui/core/Grid'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
 import { useTheme } from '@material-ui/core/styles'
 import { makeStyles } from '@material-ui/core/styles'
 
-import SigninForm from '../SigninForm'
+import SignupForm from '../SignupForm'
 
 import { formatAPIError } from '../../utils/Error'
 import { withDelay } from '../../utils/Delay'
 
 import { addMessage, removeMessage } from '../../reducers/Messages'
-import { actions as userActions, signinUser, userInfo, userSightings } from '../../reducers/User'
+import { actions as userActions, signupUser, userInfo } from '../../reducers/User'
+import { dialogNames, actions as dialogActions } from '../../reducers/Dialogs'
+
+const { MAIN_MENU, SIGN_UP, PROFILE } = dialogNames
+const { setIsOpen } = dialogActions
 
 const { resetFetching } = userActions
 
-const DIALOG_WIDTH = 380
+/* SUCCESS_MESSAGE */
 
-const useStyles = makeStyles(theme => ({
-  dialog: {
-    '& MuiDialog-root': {
-      top: 56,
-    },
-  },
-  button: {
-    color: theme.palette.primary.main,
-    textTransform: 'none',
-    paddingLeft: '1.5rem !important',
-    paddingRight: '1.5rem !important',
-    boxShadow: 'none',
+// NEXT: Extract SuccessMessage. Fix OK PROFILE grid
 
-    '&:hover': {
-      backgroundColor: 'transparent',
-    },
-  },
-  dialogClose: {
-    display: 'none',
-    width: 50,
-    position: 'absolute',
-    top: 7,
-    right: 25,
-    color: theme.palette.gray.main,
+const SUCCESS_MESSAGE = 'SignUpSuccess'
 
-    '&.fullScreen': {
-      display: 'block',
-    },
-  },
-  dialogTitle: {
-    width: DIALOG_WIDTH,
-    textAlign: 'center',
-    fontSize: 20,
-    fontWeight: 500,
-
-    '&.fullScreen': {
-      width: '100%',
-    },
-  },
-  dialogContent: {
-    width: DIALOG_WIDTH,
-    padding: '0 30px 30px',
-
-    '&.fullScreen': {
-      width: '100%',
-    },
-  },
-  alert: {
-    marginBottom: 30,
-  },
-}))
-
-const SUCCESS_MESSAGE = 'SigninButtonSuccess'
-
-const SuccessMessage = ({ dispatch, setIsProfileOpen }) => {
+const SuccessMessage = ({ dispatch }) => {
   const [open, setOpen] = React.useState(false)
 
   const handleClose = useCallback(() => {
@@ -93,14 +47,15 @@ const SuccessMessage = ({ dispatch, setIsProfileOpen }) => {
   }, [])
 
   useEffect(() => {
-    withDelay({ delay: 10000, func: () => handleClose() })
+    withDelay({ delay: 5000, func: () => handleClose() })
   }, [handleClose])
 
   const handleOpenProfile = () => {
     withDelay({
       delay: 300,
       func: () => {
-        setIsProfileOpen(true)
+        dispatch(setIsOpen({ key: MAIN_MENU, isOpen: true }))
+        dispatch(setIsOpen({ key: PROFILE, isOpen: true }))
         handleClose()
       },
     })
@@ -130,104 +85,144 @@ const SuccessMessage = ({ dispatch, setIsProfileOpen }) => {
           </Grid>
         }
       >
-        Congratulations! You have successfully logged into FlowrSpot!
+        Congratulations! You have successfully signed up for FlowrSpot!
       </Alert>
     </Collapse>
   )
 }
 
-const successMessage = ({ dispatch, setIsProfileOpen }) => ({
+const SuccessMessageConnected = connect()(SuccessMessage)
+
+const successMessage = () => ({
   key: SUCCESS_MESSAGE,
-  component: <SuccessMessage dispatch={dispatch} setIsProfileOpen={setIsProfileOpen} />,
+  component: <SuccessMessageConnected />,
 })
 
-const SigninButton = ({
-  dispatch,
-  user,
-  onOpen: maybeOnOpen,
-  setIsProfileOpen,
-  DialogHeader = () => null,
-}) => {
-  const onOpen = maybeOnOpen ? maybeOnOpen : () => {}
+/* SIGN_UP */
 
+const DIALOG_WIDTH = 380
+
+const useStyles = makeStyles(theme => ({
+  fabButton: {
+    textTransform: 'none',
+    paddingLeft: '1.5rem !important',
+    paddingRight: '1.5rem !important',
+    boxShadow: 'none',
+  },
+  dialogClose: {
+    display: 'none',
+    width: 50,
+    position: 'absolute',
+    top: 7,
+    right: 25,
+    color: theme.palette.gray.main,
+
+    '&.fullScreen': {
+      display: 'block',
+    },
+  },
+  dialogTitle: {
+    width: DIALOG_WIDTH,
+    textAlign: 'center',
+    fontSize: 20,
+
+    '&.fullScreen': {
+      width: '100%',
+    },
+  },
+  dialogContent: {
+    width: DIALOG_WIDTH,
+    padding: '0 30px 30px',
+
+    '&.fullScreen': {
+      width: '100%',
+    },
+  },
+  alert: {
+    marginBottom: 30,
+  },
+}))
+
+const SignUp = ({ dispatch, dialogs, user, DialogHeader = () => null }) => {
   const { error } = user
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [didLogin, setDidLogin] = useState(false)
+  const { dialogs: dialogsList } = dialogs
+  const { isOpen } = dialogsList[SIGN_UP]
+
+  const [didSignUp, setDidSignUp] = useState(false)
 
   const theme = useTheme()
   const fullScreen = useMediaQuery(theme.breakpoints.down('xs'))
 
   const classes = useStyles()
-  const { button, dialog, dialogClose, dialogTitle, dialogContent, alert } = classes
+  const { fabButton, dialog, dialogClose, dialogTitle, dialogContent, alert } = classes
 
   const dialogCloseClassName = `${dialogClose} ${fullScreen ? 'fullScreen' : ''}`
   const dialogTitleClassName = `${dialogTitle} ${fullScreen ? 'fullScreen' : ''}`
   const dialogContentClassName = `${dialogContent} ${fullScreen ? 'fullScreen' : ''}`
 
-  const handleClickOpenDialog = () => {
-    onOpen(true)
-    setIsDialogOpen(true)
-  }
+  // Dialog
 
+  const handleOpenDialog = () => {
+    dispatch(setIsOpen({ key: MAIN_MENU, isOpen: true }))
+    dispatch(setIsOpen({ key: SIGN_UP, isOpen: true }))
+  }
   const handleCloseDialog = () => {
     dispatch(resetFetching())
-    onOpen(false)
-    setIsDialogOpen(false)
+    dispatch(setIsOpen({ key: MAIN_MENU, isOpen: false }))
+    dispatch(setIsOpen({ key: SIGN_UP, isOpen: false }))
   }
 
-  const handleUserInfoSuccess = () => {
-    dispatch(userSightings())
-      .then(() => {})
-      .catch(error => {
-        console.log('SigninButton handleLogin error', error)
-      })
-  }
+  // Sign Up
 
-  const handleSigninSuccess = () => {
-    dispatch(addMessage(successMessage({ dispatch, setIsProfileOpen })))
+  const handleSignUpSuccess = () => {
+    dispatch(addMessage(successMessage()))
 
     dispatch(userInfo())
       .then(() => {
-        // Cannot close because the component is conditional on !!user.user in AppBar
-        // handleCloseDialog()
-        handleUserInfoSuccess()
+        handleCloseDialog()
       })
       .catch(error => {
-        console.log('SigninButton handleLogin error', error)
+        console.log('SignupButton handleRegister error', error)
       })
   }
 
   const handleSubmit = (values, { setSubmitting }) => {
-    setDidLogin(false)
+    setDidSignUp(false)
 
-    dispatch(signinUser({ body: values }))
+    dispatch(signupUser({ body: values }))
       .then(() => {
         setSubmitting(false)
-        setDidLogin(true)
+        setDidSignUp(true)
 
-        // withDelay({ delay: 300, func: () => handleSigninSuccess({ setSubmitting }) })
-        handleSigninSuccess({ setSubmitting })
+        handleSignUpSuccess({ setSubmitting })
       })
       .catch(error => setSubmitting(false))
   }
 
+  // Render
+
   return (
     <Fragment>
-      <Button className={button} onClick={handleClickOpenDialog}>
-        Login
-      </Button>
+      <Fab
+        variant="extended"
+        size="medium"
+        color="primary"
+        aria-label="add"
+        className={fabButton}
+        onClick={handleOpenDialog}
+      >
+        New Account
+      </Fab>
 
       <Dialog
         className={dialog}
         fullScreen={fullScreen}
         maxWidth="xs"
-        open={isDialogOpen}
+        open={isOpen}
         onClose={handleCloseDialog}
         aria-labelledby="responsive-dialog-title"
       >
-        <DialogHeader />
-
         <IconButton
           className={dialogCloseClassName}
           edge="start"
@@ -238,8 +233,10 @@ const SigninButton = ({
           <CloseIcon />
         </IconButton>
 
+        <DialogHeader />
+
         <DialogTitle id="responsive-dialog-title" className={dialogTitleClassName}>
-          {'Welcome Back'}
+          {'Create an Account'}
         </DialogTitle>
 
         {error && (
@@ -249,7 +246,7 @@ const SigninButton = ({
         )}
 
         <DialogContent className={dialogContentClassName}>
-          <SigninForm onSubmit={handleSubmit} didSucceed={didLogin} />
+          <SignupForm onSubmit={handleSubmit} didSucceed={didSignUp} />
         </DialogContent>
       </Dialog>
     </Fragment>
@@ -257,9 +254,10 @@ const SigninButton = ({
 }
 
 const redux = [
-  ({ user }) => ({
+  ({ dialogs, user }) => ({
+    dialogs,
     user,
   }),
 ]
 
-export default connect(...redux)(SigninButton)
+export default connect(...redux)(SignUp)

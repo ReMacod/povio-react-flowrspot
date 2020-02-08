@@ -54,7 +54,7 @@ const SigninSchema = Yup.object().shape({
     .required('Required'),
 })
 
-export default function SigninForm({ onSubmit, didSucceed }) {
+export default function SignInForm({ onSubmit, didSucceed }) {
   const classes = useStyles()
   const {
     root,

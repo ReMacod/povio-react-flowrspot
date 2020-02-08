@@ -23,6 +23,11 @@ import { withDelay } from '../../utils/Delay'
 
 import Avatar from '../../assets/images/avatar.png'
 
+import { dialogNames, actions as dialogActions } from '../../reducers/Dialogs'
+
+const { MAIN_MENU, PROFILE } = dialogNames
+const { setIsOpen } = dialogActions
+
 const DIALOG_WIDTH = 600
 const DIALOG_PADDING = 110
 
@@ -96,19 +101,13 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const ProfileButton = ({
-  dispatch,
-  user,
-  isOpen,
-  setIsOpen,
-  onOpen: maybeOnOpen,
-  DialogHeader = () => null,
-}) => {
-  const onOpen = maybeOnOpen ? maybeOnOpen : () => {}
-
+const Profile = ({ dispatch, user, dialogs, DialogHeader = () => null }) => {
   const { error, user: userProfile, sightings } = user
   const { first_name, last_name } = userProfile
   const { sightings: sightingsList } = sightings
+
+  const { dialogs: dialogsList } = dialogs
+  const { isOpen } = dialogsList[PROFILE]
 
   const fullName = `${first_name} ${last_name}`
 
@@ -117,7 +116,6 @@ const ProfileButton = ({
   const sightingsString = `sighting${isSightingsPlural ? 's' : ''}`
   const numOfSightingsFormatted = `${numOfSightings} ${sightingsString}`
 
-  // const [isOpen, setIsOpen] = useState(false)
   const [didUpdate, setDidUpdate] = useState(false)
   const [didLogout, setDidLogout] = useState(false)
 
@@ -129,7 +127,7 @@ const ProfileButton = ({
   const classes = useStyles()
   const {
     button,
-    dialog,
+    dialog: dialogClassName,
     dialogClose,
     dialogTitleWrapper,
     dialogWrapper,
@@ -142,13 +140,13 @@ const ProfileButton = ({
   const dialogTitleClassName = `${dialogTitleWrapper} ${fullScreen ? 'fullScreen' : ''}`
   const dialogContentClassName = `${dialogContent} ${fullScreen ? 'fullScreen' : ''}`
 
-  const handleClickOpen = () => {
-    onOpen(true)
-    setIsOpen(true)
+  const handleOpenProfile = () => {
+    dispatch(setIsOpen({ key: MAIN_MENU, isOpen: true }))
+    dispatch(setIsOpen({ key: PROFILE, isOpen: true }))
   }
-  const handleClose = () => {
-    onOpen(false)
-    setIsOpen(false)
+  const handleCloseProfile = () => {
+    dispatch(setIsOpen({ key: MAIN_MENU, isOpen: false }))
+    dispatch(setIsOpen({ key: PROFILE, isOpen: false }))
   }
 
   const handleSubmitUpdate = (values, { setSubmitting }) => {
@@ -178,7 +176,7 @@ const ProfileButton = ({
     withDelay({
       delay: 600,
       func: () => {
-        handleClose()
+        handleCloseProfile()
         history.push('/')
       },
     })
@@ -194,23 +192,23 @@ const ProfileButton = ({
 
   return (
     <Fragment>
-      <Button className={button} onClick={handleClickOpen}>
+      <Button className={button} onClick={handleOpenProfile}>
         {fullName}
       </Button>
 
       <Dialog
-        className={dialog}
+        className={dialogClassName}
         fullScreen={fullScreen}
         maxWidth="sm"
         open={isOpen}
-        onClose={handleClose}
+        onClose={handleCloseProfile}
         aria-labelledby="responsive-dialog-title"
       >
         <IconButton
           className={dialogClose}
           edge="start"
           color="inherit"
-          onClick={handleClose}
+          onClick={handleCloseProfile}
           aria-label="close"
         >
           <CloseIcon />
@@ -252,9 +250,10 @@ const ProfileButton = ({
 }
 
 const redux = [
-  ({ user }) => ({
+  ({ dialogs, user }) => ({
+    dialogs,
     user,
   }),
 ]
 
-export default connect(...redux)(ProfileButton)
+export default connect(...redux)(Profile)
