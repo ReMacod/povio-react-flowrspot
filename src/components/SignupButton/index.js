@@ -1,10 +1,11 @@
-import React, { useState, Fragment } from 'react'
+import React, { useState, useEffect, useCallback, Fragment } from 'react'
 import { connect } from 'react-redux'
 import Fab from '@material-ui/core/Fab'
 import Dialog from '@material-ui/core/Dialog'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Alert from '@material-ui/lab/Alert'
+import Collapse from '@material-ui/core/Collapse'
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
@@ -13,6 +14,7 @@ import { makeStyles } from '@material-ui/core/styles'
 
 import SignupForm from '../SignupForm'
 
+import { addMessage, removeMessage } from '../../reducers/Messages'
 import { signupUser, userInfo } from '../../reducers/User'
 
 import { formatAPIError } from '../../utils/Error'
@@ -61,6 +63,45 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+const SUCCESS_MESSAGE = 'SigninButtonSuccess'
+
+const SuccessMessage = ({ dispatch }) => {
+  const [open, setOpen] = React.useState(false)
+
+  const handleClose = useCallback(() => {
+    setOpen(false)
+
+    withDelay({ delay: 300, func: () => dispatch(removeMessage({ key: SUCCESS_MESSAGE })) })
+  }, [dispatch])
+
+  useEffect(() => {
+    withDelay({ delay: 300, func: () => setOpen(true) })
+  }, [])
+
+  useEffect(() => {
+    withDelay({ delay: 5000, func: () => handleClose() })
+  }, [handleClose])
+
+  return (
+    <Collapse in={open}>
+      <Alert
+        action={
+          <IconButton aria-label="close" color="inherit" size="small" onClick={handleClose}>
+            <CloseIcon fontSize="inherit" />
+          </IconButton>
+        }
+      >
+        Congratulations! You have successfully signed up for FlowrSpot!
+      </Alert>
+    </Collapse>
+  )
+}
+
+const successMessage = ({ dispatch }) => ({
+  key: SUCCESS_MESSAGE,
+  component: <SuccessMessage dispatch={dispatch} />,
+})
+
 const SignupButton = ({ dispatch, user, onOpen: maybeOnOpen, DialogHeader = () => null }) => {
   const onOpen = maybeOnOpen ? maybeOnOpen : () => {}
 
@@ -88,7 +129,9 @@ const SignupButton = ({ dispatch, user, onOpen: maybeOnOpen, DialogHeader = () =
     setIsOpen(false)
   }
 
-  const handleRegister = () => {
+  const handleRegisterSuccess = () => {
+    dispatch(addMessage(successMessage({ dispatch })))
+
     dispatch(userInfo())
       .then(() => {
         // Cannot close because the component is conditional on !!user.user in AppBar
@@ -107,7 +150,8 @@ const SignupButton = ({ dispatch, user, onOpen: maybeOnOpen, DialogHeader = () =
         setSubmitting(false)
         setDidRegister(true)
 
-        withDelay({ func: () => handleRegister({ setSubmitting }) })
+        // withDelay({ func: () => handleRegisterSuccess({ setSubmitting }) })
+        handleRegisterSuccess({ setSubmitting })
       })
       .catch(error => setSubmitting(false))
   }

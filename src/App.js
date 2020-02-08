@@ -20,12 +20,14 @@ import PageFooter from './page/Footer'
 
 import store from './reducers/store'
 import { reducer as loading } from './reducers/Loading'
+import { reducer as messages } from './reducers/Messages'
 import { reducer as flowers } from './reducers/Flowers'
 import { reducer as sightings } from './reducers/Sightings'
 import { reducer as user } from './reducers/User'
 
 const state = {
   loading,
+  messages,
   flowers,
   sightings,
   user,

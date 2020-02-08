@@ -3,11 +3,14 @@ import { connect } from 'react-redux'
 
 import AppBar from '../../components/AppBar'
 import LoadingBar from '../../components/LoadingBar'
+import MessageBar from '../../components/MessageBar'
 
 const PageHeader = ({ loading }) => (
   <Fragment>
     <AppBar />
     <LoadingBar loading={loading} />
+
+    <MessageBar />
   </Fragment>
 )
 

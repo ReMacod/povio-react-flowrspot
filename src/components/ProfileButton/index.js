@@ -96,7 +96,14 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-const ProfileButton = ({ dispatch, user, onOpen: maybeOnOpen, DialogHeader = () => null }) => {
+const ProfileButton = ({
+  dispatch,
+  user,
+  isOpen,
+  setIsOpen,
+  onOpen: maybeOnOpen,
+  DialogHeader = () => null,
+}) => {
   const onOpen = maybeOnOpen ? maybeOnOpen : () => {}
 
   const { error, user: userProfile, sightings } = user
@@ -110,7 +117,7 @@ const ProfileButton = ({ dispatch, user, onOpen: maybeOnOpen, DialogHeader = () 
   const sightingsString = `sighting${isSightingsPlural ? 's' : ''}`
   const numOfSightingsFormatted = `${numOfSightings} ${sightingsString}`
 
-  const [isOpen, setIsOpen] = useState(false)
+  // const [isOpen, setIsOpen] = useState(false)
   const [didUpdate, setDidUpdate] = useState(false)
   const [didLogout, setDidLogout] = useState(false)
 

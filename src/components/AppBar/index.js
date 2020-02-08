@@ -21,7 +21,7 @@ import ProfileButton from '../ProfileButton'
 
 import { withDelay } from '../../utils/Delay'
 
-const useStyles = makeStyles(theme => ({
+const appBarStyles = makeStyles(theme => ({
   root: {
     flexGrow: 1,
   },
@@ -138,7 +138,7 @@ const Brand = ({ onClick = () => {} }) => {
 }
 
 const DialogHeader = ({ user, onClick, onClickDialogHeader }) => {
-  const classes = useStyles()
+  const classes = appBarStyles()
   const { dialogHeader } = classes
 
   return (
@@ -171,6 +171,8 @@ const MainMenuItems = ({ user, onClick, onClickDialogHeader }) => {
   const Header = () => (isFullscreen ? DialogHeader({ user, onClick, onClickDialogHeader }) : null)
   const onOpen = isFullscreen ? handleOpen : null
 
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+
   return (
     <Fragment>
       <ButtonLink classes={buttonLinkClasses} label="Flowers" linkTo="/flowers" onClick={onClick} />
@@ -188,10 +190,15 @@ const MainMenuItems = ({ user, onClick, onClickDialogHeader }) => {
       />
 
       {userProfile ? (
-        <ProfileButton onOpen={onOpen} DialogHeader={Header} />
+        <ProfileButton
+          onOpen={onOpen}
+          DialogHeader={Header}
+          isOpen={isProfileOpen}
+          setIsOpen={setIsProfileOpen}
+        />
       ) : (
         <Fragment>
-          <SigninButton onOpen={onOpen} DialogHeader={Header} />
+          <SigninButton onOpen={onOpen} DialogHeader={Header} setIsProfileOpen={setIsProfileOpen} />
           <br />
           <SignupButton onOpen={onOpen} DialogHeader={Header} />
         </Fragment>
@@ -246,7 +253,7 @@ const MainMenu = ({ user, isFullscreen, isDialogOpen, onCloseDialog, onClickDial
   )
 
 const AppBar = ({ user }) => {
-  const classes = useStyles()
+  const classes = appBarStyles()
   const { root, appBar } = classes
 
   const theme = useTheme()

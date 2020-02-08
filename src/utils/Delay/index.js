@@ -1,1 +1,1 @@
-export const withDelay = ({ func, delay = 300 }) => setTimeout(() => func(), delay)
+export const withDelay = ({ delay = 300, func }) => setTimeout(() => func(), delay)

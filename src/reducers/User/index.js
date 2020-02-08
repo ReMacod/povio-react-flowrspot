@@ -248,7 +248,7 @@ export const signinUser = ({ body } = {}) => (dispatch, getState) =>
     handleFetch({ dispatch, request, fulfill, reject, onSuccess, onFailed })
   })
 
-// FIX: Fetch here doesn't work
+// FIX: Fetch PUT here doesn't work because of CORS
 export const updateUser = ({ body } = {}) => (dispatch, getState) =>
   new Promise((fulfill, reject) => {
     if (checkIsFetching({ getState, SLICE_NAME, reject, error: 'Already updating profile' })) {

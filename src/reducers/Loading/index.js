@@ -5,8 +5,10 @@ const initialState = {
   isEnding: false,
 }
 
-const loadingSlice = createSlice({
-  name: 'loading',
+const SLICE_NAME = 'loading'
+
+const slice = createSlice({
+  name: SLICE_NAME,
   initialState,
   reducers: {
     loadingStart: (state, action) => ({
@@ -30,4 +32,4 @@ const loadingSlice = createSlice({
   },
 })
 
-export const { reducer, actions } = loadingSlice
+export const { reducer, actions } = slice
