@@ -7,7 +7,7 @@ export let messageComponents = {
   // someMessage2: <Alert key="someMessage2">This is a success alert — check it out!</Alert>,
 }
 
-const AUTOHIDE_DURATION = 7000
+const AUTOHIDE_DURATION = 700000
 
 const initialState = {
   messages: {
