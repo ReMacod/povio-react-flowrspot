@@ -8,17 +8,16 @@ import MenuIcon from '@material-ui/icons/Menu'
 import MainMenuDialog from '../MainMenuDialog'
 import MainMenuItems from '../MainMenuItems'
 
-import { dialogNames, actions } from '../../reducers/Dialogs'
+import { dialogNames, openDialog } from '../../reducers/Dialogs'
 
 const { MAIN_MENU } = dialogNames
-const { setIsOpen } = actions
 
 const MainMenu = ({ dispatch }) => {
   const theme = useTheme()
   const isFullscreen = useMediaQuery(theme.breakpoints.down('xs'))
 
   const handleOpenMainMenu = () => {
-    dispatch(setIsOpen({ key: MAIN_MENU, isOpen: true }))
+    dispatch(openDialog({ dialogKey: MAIN_MENU }))
   }
 
   return isFullscreen ? (

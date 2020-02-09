@@ -1,14 +1,22 @@
 import { createSlice } from '@reduxjs/toolkit'
 
+import { withDelay } from '../../utils/Delay'
+
 export let messageComponents = {
-  // key: <Alert key="key">This is a success alert — check it out!</Alert>,
-  // key2: <Alert key="key2">This is a success alert — check it out!</Alert>,
+  // someMessage: <Alert key="someMessage">This is a success alert — check it out!</Alert>,
+  // someMessage2: <Alert key="someMessage2">This is a success alert — check it out!</Alert>,
 }
 
+const AUTOHIDE_DURATION = 7000
+
 const initialState = {
-  messageKeys: {
-    // key: true,
-    // key2: false,
+  messages: {
+    // someMessage: {
+    //   isOpen: true,
+    // },
+    // someMessage2: {
+    //   isOpen: false,
+    // },
   },
 }
 
@@ -18,31 +26,65 @@ const slice = createSlice({
   name: SLICE_NAME,
   initialState,
   reducers: {
-    addMessageKey: (state, action) => ({
-      messageKeys: {
-        ...state.messageKeys,
-        [action.payload]: true,
+    addMessage: (state, action) => ({
+      messages: {
+        ...state.messages,
+        ...action.payload,
       },
     }),
-    removeMessageKey: (state, action) => ({
-      messageKeys: {
-        ...state.messageKeys,
-        [action.payload]: false,
-      },
-    }),
+    setIsOpenMessage: (state, action) => {
+      const { messageKey, isOpen } = action.payload
+
+      return {
+        messages: {
+          ...state.messages,
+          [messageKey]: {
+            ...state.messages[messageKey],
+            isOpen,
+          },
+        },
+      }
+    },
   },
 })
 
 export const { reducer, actions } = slice
 
-export const addMessage = ({ key, component }) => (dispatch, getState) => {
-  messageComponents[key] = component
-
-  dispatch(actions.addMessageKey(key))
+export const showMessage = ({ messageKey }) => (dispatch, getState) => {
+  dispatch(actions.setIsOpenMessage({ messageKey, isOpen: true }))
 }
 
-export const removeMessage = ({ key }) => (dispatch, getState) => {
-  messageComponents[key] = null
+export const hideMessage = ({ messageKey }) => (dispatch, getState) => {
+  const state = getState()
+  const { messages } = state[SLICE_NAME]
+  const { autohideTimeout } = messages[messageKey] || {}
 
-  dispatch(actions.removeMessageKey(key))
+  if (autohideTimeout) clearTimeout(autohideTimeout)
+
+  dispatch(actions.setIsOpenMessage({ messageKey, isOpen: false }))
+}
+
+export const hideAllMessages = () => (dispatch, getState) => {
+  const state = getState()
+  const { messages } = state[SLICE_NAME]
+
+  Object.keys(messages).forEach(messageKey => {
+    dispatch(hideMessage({ messageKey }))
+  })
+}
+
+export const addMessage = ({ messageKey, component }) => (dispatch, getState) => {
+  messageComponents[messageKey] = component
+
+  const message = {
+    [messageKey]: {
+      isOpen: false,
+      autohideTimeout: setTimeout(() => {
+        dispatch(hideMessage({ messageKey }))
+      }, AUTOHIDE_DURATION),
+    },
+  }
+
+  dispatch(actions.addMessage(message))
+  withDelay({ func: () => dispatch(showMessage({ messageKey })) })
 }

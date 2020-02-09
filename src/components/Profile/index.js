@@ -15,18 +15,19 @@ import { makeStyles } from '@material-ui/core/styles'
 import { useHistory } from 'react-router-dom'
 
 import ProfileForm from '../ProfileForm'
+import Message from '../Message'
 
 import { updateUser, logoutUser } from '../../reducers/User'
+import { addMessage } from '../../reducers/Messages'
 
 import { formatAPIError } from '../../utils/Error'
 import { withDelay } from '../../utils/Delay'
 
 import Avatar from '../../assets/images/avatar.png'
 
-import { dialogNames, actions as dialogActions } from '../../reducers/Dialogs'
+import { dialogNames, openDialog, closeDialog } from '../../reducers/Dialogs'
 
 const { MAIN_MENU, PROFILE } = dialogNames
-const { setIsOpen } = dialogActions
 
 const DIALOG_WIDTH = 600
 const DIALOG_PADDING = 110
@@ -101,6 +102,73 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
+/* LOGOUT MESSAGES */
+
+const SUCCESS_MESSAGE_KEY = 'ProfileLogoutSuccess'
+
+const logoutSuccessMessage = ({ dispatch }) => {
+  const content = <span>You have successfully logged out of FlowrSpot!</span>
+
+  return {
+    messageKey: SUCCESS_MESSAGE_KEY,
+    component: (
+      <Message
+        messageKey={SUCCESS_MESSAGE_KEY}
+        content={content}
+        alertProps={{ severity: 'success' }}
+      />
+    ),
+  }
+}
+
+const FAILED_MESSAGE_KEY = 'ProfileLogoutFailed'
+
+const logoutFailedMessage = ({ dispatch, error }) => {
+  const handleOpenProfile = () => {
+    withDelay({
+      delay: 300,
+      func: () => {
+        dispatch(openDialog({ dialogKey: MAIN_MENU }))
+        dispatch(openDialog({ dialogKey: PROFILE }))
+      },
+    })
+  }
+
+  const content = <span>Failed to log out of FlowrSpot! Reason: {error}</span>
+
+  const actions = {
+    profile: (
+      <IconButton aria-label="close" color="inherit" size="small" onClick={handleOpenProfile}>
+        PROFILE
+      </IconButton>
+    ),
+  }
+
+  return {
+    messageKey: FAILED_MESSAGE_KEY,
+    component: (
+      <Message
+        messageKey={FAILED_MESSAGE_KEY}
+        content={content}
+        actions={actions}
+        alertProps={{ severity: 'error' }}
+      />
+    ),
+  }
+}
+
+/* PROFILE */
+
+export const openProfile = ({ dispatch }) => {
+  dispatch(openDialog({ dialogKey: MAIN_MENU }))
+  dispatch(openDialog({ dialogKey: PROFILE }))
+}
+
+export const closeProfile = ({ dispatch }) => {
+  dispatch(closeDialog({ dialogKey: PROFILE }))
+  dispatch(closeDialog({ dialogKey: MAIN_MENU }))
+}
+
 const Profile = ({ dispatch, user, dialogs, DialogHeader = () => null }) => {
   const { error, user: userProfile, sightings } = user
   const { first_name, last_name } = userProfile
@@ -140,14 +208,8 @@ const Profile = ({ dispatch, user, dialogs, DialogHeader = () => null }) => {
   const dialogTitleClassName = `${dialogTitleWrapper} ${fullScreen ? 'fullScreen' : ''}`
   const dialogContentClassName = `${dialogContent} ${fullScreen ? 'fullScreen' : ''}`
 
-  const handleOpenProfile = () => {
-    dispatch(setIsOpen({ key: MAIN_MENU, isOpen: true }))
-    dispatch(setIsOpen({ key: PROFILE, isOpen: true }))
-  }
-  const handleCloseProfile = () => {
-    dispatch(setIsOpen({ key: MAIN_MENU, isOpen: false }))
-    dispatch(setIsOpen({ key: PROFILE, isOpen: false }))
-  }
+  const handleOpenProfile = () => openProfile({ dispatch })
+  const handleCloseProfile = () => closeProfile({ dispatch })
 
   const handleSubmitUpdate = (values, { setSubmitting }) => {
     setDidUpdate(false)
@@ -162,7 +224,7 @@ const Profile = ({ dispatch, user, dialogs, DialogHeader = () => null }) => {
       .catch(error => setSubmitting(false))
   }
 
-  // Optimistic logout
+  // Optimistic logout because Profile dialog shows only when !!user.user is in store
   const handleSubmitLogout = () => {
     setDidLogout(false)
 
@@ -176,17 +238,24 @@ const Profile = ({ dispatch, user, dialogs, DialogHeader = () => null }) => {
     withDelay({
       delay: 600,
       func: () => {
-        handleCloseProfile()
         history.push('/')
       },
     })
 
     withDelay({
       delay: 700,
-      func: () =>
-        dispatch(logoutUser()).catch(error => {
-          console.log('handleSubmitLogout error', error)
-        }),
+      func: () => {
+        setDidLogout(false)
+        handleCloseProfile()
+
+        dispatch(logoutUser())
+          .then(() => {
+            dispatch(addMessage(logoutSuccessMessage({ dispatch })))
+          })
+          .catch(error => {
+            dispatch(addMessage(logoutFailedMessage({ dispatch, error })))
+          })
+      },
     })
   }
 

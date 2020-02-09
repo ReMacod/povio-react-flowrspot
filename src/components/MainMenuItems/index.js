@@ -10,10 +10,9 @@ import SignIn from '../SignIn'
 import SignUp from '../SignUp'
 import Profile from '../Profile'
 
-import { dialogNames, actions as dialogActions } from '../../reducers/Dialogs'
+import { dialogNames, closeDialog } from '../../reducers/Dialogs'
 
 const { MAIN_MENU } = dialogNames
-const { setIsOpen } = dialogActions
 
 const buttonLinkStyles = makeStyles(theme => ({
   link: {
@@ -49,7 +48,7 @@ const MainMenuItems = ({ dispatch, user }) => {
   const DialogHeader = isFullscreen ? MainMenuDialogHeader : Fragment
 
   const handleCloseMainMenu = () => {
-    dispatch(setIsOpen({ key: MAIN_MENU, isOpen: false }))
+    dispatch(closeDialog({ dialogKey: MAIN_MENU }))
   }
 
   return (

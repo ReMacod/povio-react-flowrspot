@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, Fragment } from 'react'
+import React, { useState, Fragment } from 'react'
 import { connect } from 'react-redux'
 import Button from '@material-ui/core/Button'
 import Dialog from '@material-ui/core/Dialog'
@@ -7,94 +7,61 @@ import DialogTitle from '@material-ui/core/DialogTitle'
 import Alert from '@material-ui/lab/Alert'
 import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
-import Collapse from '@material-ui/core/Collapse'
-import Grid from '@material-ui/core/Grid'
 import useMediaQuery from '@material-ui/core/useMediaQuery'
 import { useTheme } from '@material-ui/core/styles'
 import { makeStyles } from '@material-ui/core/styles'
 
 import SignInForm from '../SignInForm'
+import Message from '../Message'
+import { openProfile } from '../Profile'
 
 import { formatAPIError } from '../../utils/Error'
 import { withDelay } from '../../utils/Delay'
 
-import { addMessage, removeMessage } from '../../reducers/Messages'
+import { addMessage } from '../../reducers/Messages'
 import { actions as userActions, signinUser, userInfo, userSightings } from '../../reducers/User'
-import { dialogNames, actions as dialogActions } from '../../reducers/Dialogs'
+import { dialogNames, openDialog, closeDialog } from '../../reducers/Dialogs'
 
-const { MAIN_MENU, SIGN_IN, PROFILE } = dialogNames
-const { setIsOpen } = dialogActions
+const { MAIN_MENU, SIGN_IN } = dialogNames
 
 const { resetFetching } = userActions
 
-/* SUCCESS_MESSAGE */
+/* SIGN_IN SUCCESS MESSAGE */
 
-const SUCCESS_MESSAGE = 'SignInSuccess'
+const SUCCESS_MESSAGE_KEY = 'SignInSuccess'
 
-const SuccessMessage = ({ dispatch }) => {
-  const [open, setOpen] = React.useState(false)
-
-  const handleClose = useCallback(() => {
-    setOpen(false)
-
-    withDelay({ delay: 300, func: () => dispatch(removeMessage({ key: SUCCESS_MESSAGE })) })
-  }, [dispatch])
-
-  useEffect(() => {
-    withDelay({ delay: 300, func: () => setOpen(true) })
-  }, [])
-
-  useEffect(() => {
-    withDelay({ delay: 10000, func: () => handleClose() })
-  }, [handleClose])
-
+const successMessage = ({ dispatch }) => {
   const handleOpenProfile = () => {
     withDelay({
       delay: 300,
       func: () => {
-        dispatch(setIsOpen({ key: MAIN_MENU, isOpen: true }))
-        dispatch(setIsOpen({ key: PROFILE, isOpen: true }))
-        handleClose()
+        openProfile({ dispatch })
       },
     })
   }
 
-  return (
-    <Collapse in={open}>
-      <Alert
-        action={
-          <Grid container spacing={3}>
-            <Grid item>
-              <IconButton aria-label="close" color="inherit" size="small" onClick={handleClose}>
-                OK
-              </IconButton>
-            </Grid>
+  const content = <span>Congratulations! You have successfully logged into FlowrSpot!</span>
 
-            <Grid item>
-              <IconButton
-                aria-label="close"
-                color="inherit"
-                size="small"
-                onClick={handleOpenProfile}
-              >
-                PROFILE
-              </IconButton>
-            </Grid>
-          </Grid>
-        }
-      >
-        Congratulations! You have successfully logged into FlowrSpot!
-      </Alert>
-    </Collapse>
-  )
+  const actions = {
+    profile: (
+      <IconButton aria-label="close" color="inherit" size="small" onClick={handleOpenProfile}>
+        PROFILE
+      </IconButton>
+    ),
+  }
+
+  return {
+    messageKey: SUCCESS_MESSAGE_KEY,
+    component: (
+      <Message
+        messageKey={SUCCESS_MESSAGE_KEY}
+        content={content}
+        actions={actions}
+        alertProps={{ severity: 'success' }}
+      />
+    ),
+  }
 }
-
-const SuccessMessageConnected = connect()(SuccessMessage)
-
-const successMessage = () => ({
-  key: SUCCESS_MESSAGE,
-  component: <SuccessMessageConnected />,
-})
 
 /* SIGN_IN */
 
@@ -173,14 +140,14 @@ const SignIn = ({ dispatch, dialogs, user, DialogHeader = () => null }) => {
   // Dialog
 
   const handleOpenDialog = () => {
-    dispatch(setIsOpen({ key: MAIN_MENU, isOpen: true }))
-    dispatch(setIsOpen({ key: SIGN_IN, isOpen: true }))
+    dispatch(openDialog({ dialogKey: MAIN_MENU }))
+    dispatch(openDialog({ dialogKey: SIGN_IN }))
   }
 
   const handleCloseDialog = () => {
     dispatch(resetFetching())
-    dispatch(setIsOpen({ key: MAIN_MENU, isOpen: false }))
-    dispatch(setIsOpen({ key: SIGN_IN, isOpen: false }))
+    dispatch(closeDialog({ dialogKey: SIGN_IN }))
+    dispatch(closeDialog({ dialogKey: MAIN_MENU }))
   }
 
   // Sign In
@@ -194,7 +161,7 @@ const SignIn = ({ dispatch, dialogs, user, DialogHeader = () => null }) => {
   }
 
   const handleSigninSuccess = () => {
-    dispatch(addMessage(successMessage()))
+    dispatch(addMessage(successMessage({ dispatch })))
 
     dispatch(userInfo())
       .then(() => {
@@ -202,6 +169,7 @@ const SignIn = ({ dispatch, dialogs, user, DialogHeader = () => null }) => {
         handleUserInfoSuccess()
       })
       .catch(error => {
+        // Errors already handled in SignInForm
         console.log('SigninButton handleLogin error', error)
       })
   }

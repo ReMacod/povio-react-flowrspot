@@ -284,8 +284,10 @@ export const logoutUser = ({ body } = {}) => (dispatch, getState) =>
 
     // const options = { ...optionsPost, body: JSON.stringify(body) }
     // const request = () => fetch(usersLogout, options)
-    const mockResponse = new Response(JSON.stringify({ auth_token: null }), { status: 200 })
-    const request = () => mockResponse
+
+    const mockResponseSuccess = new Response(JSON.stringify({ auth_token: null }), { status: 200 })
+    // const mockResponseFailed = new Response(JSON.stringify('Server error'), { status: 400 })
+    const request = () => mockResponseSuccess
 
     handleFetch({ dispatch, request, fulfill, reject, onSuccess, onFailed })
   })

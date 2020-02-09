@@ -14,9 +14,9 @@ export const useStyles = makeStyles(theme => ({
 
 const MessageBar = ({ messages }) => (
   <Fragment>
-    {Object.entries(messages.messageKeys).map(
-      ([key, isActive]) => isActive && <Fragment key={key}>{messageComponents[key]}</Fragment>
-    )}
+    {Object.entries(messages.messages).map(([messageKey, message]) => (
+      <Fragment key={messageKey}>{messageComponents[messageKey]}</Fragment>
+    ))}
   </Fragment>
 )
 

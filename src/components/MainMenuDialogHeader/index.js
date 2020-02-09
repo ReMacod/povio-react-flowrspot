@@ -8,10 +8,9 @@ import MenuIcon from '@material-ui/icons/Menu'
 
 import Brand from '../Brand'
 
-import { dialogNames, actions as dialogActions } from '../../reducers/Dialogs'
+import { dialogNames, openDialog, closeAllDialogs } from '../../reducers/Dialogs'
 
 const { MAIN_MENU } = dialogNames
-const { setIsOpen, closeAll } = dialogActions
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -24,12 +23,12 @@ const MainMenuDialogHeader = ({ dispatch }) => {
   const { root } = classes
 
   const handleOpenMainMenu = () => {
-    dispatch(closeAll())
-    dispatch(setIsOpen({ key: MAIN_MENU, isOpen: true }))
+    dispatch(closeAllDialogs())
+    dispatch(openDialog({ dialogKey: MAIN_MENU }))
   }
 
   const handleClosenMainMenu = () => {
-    dispatch(closeAll())
+    dispatch(closeAllDialogs())
   }
 
   return (

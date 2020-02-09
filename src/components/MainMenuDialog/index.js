@@ -9,10 +9,9 @@ import CloseIcon from '@material-ui/icons/Close'
 
 import Brand from '../Brand'
 
-import { dialogNames, actions } from '../../reducers/Dialogs'
+import { dialogNames, closeDialog } from '../../reducers/Dialogs'
 
 const { MAIN_MENU } = dialogNames
-const { setIsOpen } = actions
 
 const useStyles = makeStyles(theme => ({
   dialogClose: {
@@ -45,7 +44,7 @@ const MainMenuDialog = ({ dispatch, dialogs, children }) => {
   const { dialogs: dialogsList } = dialogs
   const { isOpen } = dialogsList[MAIN_MENU]
 
-  const onClose = () => dispatch(setIsOpen({ key: MAIN_MENU, isOpen: false }))
+  const onClose = () => dispatch(closeDialog({ dialogKey: MAIN_MENU }))
 
   const dialogClasses = useStyles()
   const { dialog, dialogClose, dialogTitle, dialogContent } = dialogClasses
